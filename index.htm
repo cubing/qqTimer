@@ -1395,9 +1395,30 @@ function megascramble(turns, suffixes){
  }
 }
 
+// Touch events
+
+function ini_touch_area() {
+  document.getElementById("touch_area").addEventListener( 'touchstart', onDocumentTouchStart, false );
+  document.getElementById("touch_area").addEventListener( 'touchend', onDocumentTouchEnd, false );
+}
+
+function onDocumentTouchStart() {
+  stopTimer(32);
+}
+
+function onDocumentTouchEnd() {
+  startTimer(32);
+}
+
 // -->
  </script>
+<style>
+#touch_area {
+  
+}
+</style>
 </head><body onload="initialize()" onkeyup="startTimer(event.keyCode);" onkeydown="checkKey(event.keyCode);">
+<div id="touch_area" onload="ini_touch_area()" onmouseup="startTimer(32);" onmousedown="stopTimer(32);">asdf</div>
  <table border="1" cellpadding="5" cellspacing="0" width="100%">
   <tbody><tr>
    <td colspan="3" id="menu" bgcolor="#00ff00">
