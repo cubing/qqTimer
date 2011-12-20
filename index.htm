@@ -8,6 +8,13 @@
   <script type="text/javascript">
 <!--
 
+// If the site has changed, reload the page as soon as we've cached have all the new files. (Should happen pretty fast, and quite often the user won't even notice.)
+function updateReadyCache() {
+  window.applicationCache.swapCache();
+  location.reload(true);
+}
+
+
 var startTime;
 var curTime;
 var inspectionTime;
