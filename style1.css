@@ -1,0 +1,56 @@
+/*
+Original design: andreas03 (v2.0 - Apr 24, 2008) - A free xhtml/css website template by Andreas Viklund.
+For more information, see http://andreasviklund.com/templates/andreas03/
+*/
+
+/* General layout */
+body {margin:0; padding:20px 0; font:76% tahoma,verdana,sans-serif; background:#047 url(img/bodybg.png) repeat-x fixed; color:#333;}
+#thetop {margin:0;}
+#container {width:720px; margin:0 auto; padding:20px 20px 0 20px; background:#fff url(img/contbg.png) no-repeat; color:#333;}
+
+/* Tags */
+h1,h2,h3,h4 {margin:0 0 10px 0; font-weight:normal;}
+h1 {font-size:2.6em;}
+h2 {margin:0 0 4px 0; font-size:1.5em;}
+h3 {margin:20px 0 8px 0; font-size:1.3em;}
+h4 {margin:10px 0 5px 0; font-size:1.2em;}
+a {text-decoration:none; color:white;}
+a:hover {text-decoration:underline;}
+a img {border:0;}
+p {margin:0 0 15px 10px; line-height:1.5em;}
+
+/* Site title and header */
+#logo {float:left; width:240px; margin:0 20px 0 0; padding:0 0 30px 0; background:#eee; border:4px solid #dde; text-align:center; color:#555; overflow:auto;}
+#logo h1 {margin:30px 5px 5px 5px; letter-spacing:-2px;line-height:1em;}
+#logo a {color:#26a; text-decoration:none;}
+#logo a:hover {color:#69e;}
+#tagline {text-align:center; font-size:1.2em;line-height:1.5em;}
+#intro p {line-height:1.5em;}
+
+/* Main content */
+#main {float:left; width:530px; margin-right:20px; padding:0; line-height:1.3em; }
+
+/* Sidebar */
+#sidebar {width:155px; float:right; margin-top:20px; font-size:1em; line-height:1.3em;}
+#sidebar p, #sidebar ul, #sidebar ol {margin:0 0 15px 10px; padding:0;}
+#sidebar ul li, #sidebar ol li {list-style:none; padding:0; margin:0 0 4px 0;}
+.sidelink {display:block; width:140px; margin:3px 10px 2px 0; padding:5px 0 5px 8px; font-size:1.2em; font-weight:400; text-align:left; background:#eee url(img/gradient1.png) repeat-x; color:#26c; border-top:1px solid #ddd; border-right:1px solid #bbb; border-bottom:1px solid #bbb; border-left:1px solid #ddd;}
+.sidelink:hover,.menuheader {background:#fff url(img/gradient2.png) repeat-x; color:#333; border-top:1px solid #ddd; border-right:1px solid #888; border-bottom:1px solid #888; border-left:1px solid #ddd; text-decoration:none;}
+
+/* Footer */
+#footer {margin:0 auto 10px auto; line-height:1.6em; width:760px; background:#fff url(img/footerbg.png) bottom left no-repeat; padding:0 0 1px 0; font-size:1.1em; color:#777; text-align:center;}
+
+/* Additional classes */
+.headerstyle {clear:left; display:block; margin:20px 0 10px 0; padding:5px 0 5px 8px; background:#eee url(img/gradient2.png) repeat-x; color:#444; border-top:1px solid #ddd; border-right:1px solid #bbb; border-bottom:1px solid #bbb; border-left:1px solid #ddd; text-decoration:none;}
+.clear {clear:both; margin:0; padding:0;}
+.right {text-align:right;}
+.internallink {font-size:0.9em; text-align:center;}
+#sidebar p.block {font-size:0.9em; line-height:1.4em; margin:5px auto 15px auto; padding:5px; color:#555; border-top:1px solid #ddd; border-right:1px solid #bbb; border-bottom:1px solid #bbb; border-left:1px solid #ddd;}
+.credit {color:#777;}
+.hide {display:none;}
+
+/* qqtimer */
+.a {color: blue; text-decoration: none; cursor: pointer;}
+span.a:hover {color: red;}
+.b {cursor: pointer;}
+span.b:hover {color: red;}

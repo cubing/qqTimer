@@ -1,0 +1,8 @@
+.a {
+ color: blue;
+ text-decoration: underline;
+ cursor: pointer }
+.b {
+ cursor: pointer }
+span.b:hover {
+ color: red }
