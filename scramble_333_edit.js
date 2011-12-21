@@ -1800,13 +1800,13 @@ function drawSquare(r, cx, cy, w, fillColor) {
     initialize: ini,
     setRandomSource: setRandomSource,
     getRandomScramble: getRandomScramble,
+    drawScramble: drawScramble,
+
+    /* Other methods */
     getEdgeScramble: getEdgeScramble,
     getCornerScramble: getCornerScramble,
     getLLScramble: getLLScramble,
     getLSLLScramble: getLSLLScramble,
-    drawScramble: drawScramble,
-
-    /* Other methods */
   };
 
 })();
