@@ -1,5 +1,4 @@
-﻿
-<html>
+﻿<html>
  <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
   <title>qqTimer</title>
@@ -39,7 +38,6 @@ var styleName = "style" + ((a=getCookie("style"))==null?0:a) + ".css";
 document.writeln("<link rel='stylesheet' type='text/css' href='"+styleName+"'>");
 
 function initialize(lookForTimes, checkQueryString) {
- scramblers['333'].initialize(null, Math);
  loadOptBoxes();
  var query = ""; // query string for scrambles
  if (checkQueryString) {
@@ -106,12 +104,14 @@ function initialize(lookForTimes, checkQueryString) {
  useMono = (a=getCookie("useMono"))===null ? 0 : a;
  $('monospace').innerHTML = (useMono==1) ? "on" : "off";
  $('scramble').style.fontFamily = (useMono==1) ? "monospace" : "serif";
- $('getlast').style.color = parseColor($('lcol'));
+ $('getlast').style.color = parseColor($('lcol').value);
  type = (a=getCookie("scrType"))===null ? "333" : a;
  if (query.length > 0) type = query;
  
  loadList();
  getStats(true);
+
+ scramblers['333'].initialize(null, Math); // hopefully this'll let IE load scramblers
 
  curTime = new Date(0);
  $('leng').value = len;
@@ -233,9 +233,12 @@ function stopTimer(keyCode) {
   if (keyCode == 13) {
    var timeStr = $('timeEntry').value;
    if (timeStr.match(/.* .*/)) {
-    comments[times.length] = timeStr.replace(/.*? (.*)$/, "$1");
-    notes[times.length] = 0;
-    parseTime(timeStr.replace(/(.*) .*/, "$1"));
+    if (parseTime(timeStr.replace(/(.*) .*/, "$1"))) { // if time breaks, ignore comments/notes
+     comments[times.length-1] = timeStr.replace(/.*? (.*)$/, "$1");
+     notes[times.length-1] = 0;
+     loadList(); // unfortunately have to do this twice ;|
+     getStats(false);
+    }
    } else {
     parseTime(timeStr);
    }
@@ -287,19 +290,19 @@ function getTime(note) {
  curTime = new Date();
  
  if (useBld==1) { 
-  var time = curTime.getTime() - memoTime.getTime(); 
-  var mtime = startTime.getTime() - memoTime.getTime(); 
+	var time = curTime.getTime() - memoTime.getTime(); 
+	var mtime = startTime.getTime() - memoTime.getTime();	
  } 
  else {
-  var time = curTime.getTime() - startTime.getTime();
+	var time = curTime.getTime() - startTime.getTime();
  }
  times[times.length] = time;
  notes[notes.length] = note;
  if (useBld==1) { 
-  comments[comments.length] = pretty(mtime) 
+	comments[comments.length] = pretty(mtime) 
  }
  else { 
-  comments[comments.length] = ""; 
+	comments[comments.length] = ""; 
  }
  $('theTime').innerHTML = pretty(time);
  clearHighlight();
@@ -319,7 +322,7 @@ function parseTime(s, importing) {
  }
  time = Math.round(time);
  if (isNaN(time)) time = 0;
- if (time != 0) { // don't insert zero-times
+ if (time != 0) {	// don't insert zero-times
   if (!importing) {
    notes[notes.length] = 0;
    comments[comments.length] = "";
@@ -330,6 +333,9 @@ function parseTime(s, importing) {
   clearHighlight();
   loadList();
   getStats(false);
+  return true;
+ } else {
+  return false;
  }
 }
 
@@ -396,6 +402,30 @@ function comment() {
  loadList();
 }
 
+function getBrowser() {
+ // http://www.quirksmode.org/js/detect.html
+ var versionSearchString;
+ var dataBrowser = [
+  {string:navigator.userAgent, subString:"Chrome", identity:"Chrome"},
+  {string:navigator.userAgent, subString:"Safari", identity:"Chrome"},
+  {string:navigator.userAgent, subString:"Firefox", identity:"Firefox"},
+  {string:navigator.userAgent, subString:"MSIE", identity:"IE", versionSearch:"MSIE"}];
+
+ function searchString(data) {
+  for (var i=0;i<data.length;i++) {
+   var dataString = data[i].string;
+   var dataProp = data[i].prop;
+   if (dataString) {
+    if (dataString.indexOf(data[i].subString) != -1)
+     return data[i].identity;
+   } else if (dataProp)
+    return data[i].identity;
+  }
+ };
+ 
+ return searchString(dataBrowser) || "An unknown browser";
+}
+
 
 // #################### OPTIONS ####################
 
@@ -450,7 +480,7 @@ function toggleMono() {
  setCookie("useMono", useMono);
  $('monospace').innerHTML = (useMono==1) ? "on" : "off";
  $('scramble').style.fontFamily = (useMono==1) ? "monospace" : "serif";
- $('getlast').style.color = parseColor($('lcol'));
+ $('getlast').style.color = parseColor($('lcol').value);
 }
 
 function toggleInput() {
@@ -530,12 +560,23 @@ function changeColor() {
  $('menu').bgColor = parseColor($('tcol').value);
  document.bgColor = parseColor($('bcol').value);
  document.body.style.color = parseColor($('fcol').value);
- var links = document.getElementsByClassName('a');
- for (var i = 0; i < links.length; i++) {
-  links[i].style.color = parseColor($('lcol').value);
+
+ if (getBrowser() != "IE") {
+  var links = document.getElementsByClassName('a');
+  for (var i = 0; i < links.length; i++) {
+   links[i].style.color = parseColor($('lcol').value);
+  }
+ } else {
+  var links = document.getElementsByTagName('span');
+  for (var i = 0; i < links.length; i++) {
+   if (links[i].className == "a") {
+    links[i].style.color = parseColor($('lcol').value);
+   }
+  }
  }
+
  highlightColor = parseColor($('hcol').value);
- $('getlast').style.color = parseColor($('lcol'));
+ $('getlast').style.color = parseColor($('lcol').value);
  setCookie("tColor", $('tcol').value);
  setCookie("bColor", $('bcol').value);
  setCookie("fColor", $('fcol').value);
@@ -650,6 +691,7 @@ function getSession() {
  times = [];
  notes = [];
  comments = [];
+ scrambleArr = [];
  var cookies = document.cookie.split(';');
  var cnt = 1;
  var x = "session"+id+"|"+cnt+"=";
@@ -1134,87 +1176,87 @@ function rndEl(x){return x[Math.floor(Math.random()*x.length)];}
 function scrambleIt(){
  lastscramble = scramble;
  for (var i=0; i<num; i++) ss[i] = "";
- if(type=="111"){     // 1x1x1
+ if(type=="111"){			// 1x1x1
   megascramble([["x"],["y"],["z"]],cubesuff);
  }
- else if(type=="2223"){     // 2x2x2 (3-gen)
+ else if(type=="2223"){			// 2x2x2 (3-gen)
   megascramble([["U"],["R"],["F"]],cubesuff);
  }
- else if(type=="2226"){     // 2x2x2 (6-gen)
+ else if(type=="2226"){			// 2x2x2 (6-gen)
   megascramble([[["U","D"]],[["R","L"]],[["F","B"]]],cubesuff);
  }
- else if(type=="222o"){     // 2x2x2 (optimal random state)
+ else if(type=="222o"){			// 2x2x2 (optimal random state)
   get2x2optscramble(0);
  }
- else if(type=="222so"){    // 2x2x2 (suboptimal random state)
+ else if(type=="222so"){		// 2x2x2 (suboptimal random state)
   get2x2optscramble(9);
  }
- else if(type=="333o"){     // 3x3x3 (old style)
+ else if(type=="333o"){			// 3x3x3 (old style)
   megascramble([["U","D"],["R","L"],["F","B"]],cubesuff);
  }
- else if(type=="333"){    // 3x3x3 (suboptimal random state)
+ else if(type=="333"){		// 3x3x3 (suboptimal random state)
    ss[0]=scramblers["333"].getRandomScramble();
  }
- else if(type=="sqrs"){   // square-1 (suboptimal random state)
+ else if(type=="sqrs"){		// square-1 (suboptimal random state)
    if (initoncesq1==1) { scramblers['sq1'].initialize(null, Math); initoncesq1=0; }
-   ss[0]=scramblers["sq1"].getRandomScramble();
+   ss[0]=scramblers["sq1"].getRandomScramble().scramble;
  }
- else if(type=="334"){      // 3x3x4
+ else if(type=="334"){			// 3x3x4
   megascramble([[["U","U'","U2","D","D'","D2"],["u","u'","u2","d","d'","d2"]],[["R2","L2","R2 L2"]],[["F2","B2","F2 B2"]]],[""]);
  }
- else if(type=="335"){      // 3x3x5
+ else if(type=="335"){			// 3x3x5
   var n;
   megascramble([[["U","U'","U2"], ["D", "D'", "D2"]],["R2","L2"],["F2","B2"]],[""]);
   for(n=0;n<num;n++){ss[n]+=" / ";}
   megascramble([["U","D"],["R","L"],["F","B"]],cubesuff);
  }
- else if(type=="444"){      // 4x4x4 (SiGN)
+ else if(type=="444"){			// 4x4x4 (SiGN)
   megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);
  }
- else if(type=="444wca"){   // 4x4x4 (WCA)
+ else if(type=="444wca"){		// 4x4x4 (WCA)
   megascramble([["U","D","Uw"],["R","L","Rw"],["F","B","Fw"]],cubesuff);
  }
- else if(type=="444yj"){    // 4x4x4 (YJ style)
+ else if(type=="444yj"){		// 4x4x4 (YJ style)
   yj4x4();
  }
- else if(type=="555"){      // 5x5x5 (SiGN)
+ else if(type=="555"){			// 5x5x5 (SiGN)
   megascramble([["U","D","u","d"],["R","L","r","l"],["F","B","f","b"]],cubesuff);
  }
- else if(type=="555wca"){   // 5x5x5 (WCA)
+ else if(type=="555wca"){		// 5x5x5 (WCA)
   megascramble([["U","D","Uw","Dw"],["R","L","Rw","Lw"],["F","B","Fw","Bw"]],cubesuff);
  }
- else if(type=="666p"){     // 6x6x6 (prefix)
+ else if(type=="666p"){			// 6x6x6 (prefix)
   megascramble([["U","D","2U","2D","3U"],["R","L","2R","2L","3R"],["F","B","2F","2B","3F"]],cubesuff);
  }
- else if(type=="666s"){     // 6x6x6 (suffix)
+ else if(type=="666s"){			// 6x6x6 (suffix)
   megascramble([["U","D","U&sup2;","D&sup2;","U&sup3;"],["R","L","R&sup2;","L&sup2;","R&sup3;"],["F","B","F&sup2;","B&sup2;","F&sup3;"]],cubesuff);
  }
- else if(type=="666si"){    // 6x6x6 (SiGN)
+ else if(type=="666si"){		// 6x6x6 (SiGN)
   megascramble([["U","D","u","d","3u"],["R","L","r","l","3r"],["F","B","f","b","3f"]],cubesuff);
  }
- else if(type=="777p"){     // 7x7x7 (prefix)
+ else if(type=="777p"){			// 7x7x7 (prefix)
   megascramble([["U","D","2U","2D","3U","3D"],["R","L","2R","2L","3R","3L"],["F","B","2F","2B","3F","3B"]],cubesuff);
  }
- else if(type=="777s"){     // 7x7x7 (suffix)
+ else if(type=="777s"){			// 7x7x7 (suffix)
   megascramble([["U","D","U&sup2;","D&sup2;","U&sup3;","D&sup3;"],["R","L","R&sup2;","L&sup2;","R&sup3;","L&sup3;"],["F","B","F&sup2;","B&sup2;","F&sup3;","B&sup3;"]],cubesuff);
  }
- else if(type=="777si"){    // 7x7x7 (SiGN)
+ else if(type=="777si"){		// 7x7x7 (SiGN)
   megascramble([["U","D","u","d","3u","3d"],["R","L","r","l","3r","3l"],["F","B","f","b","3f","3b"]],cubesuff);
  }
- else if(type=="15p"){      // 15 puzzle
+ else if(type=="15p"){			// 15 puzzle
   do15puzzle(false);
  }
- else if(type=="15pm"){     // 15 puzzle, mirrored
+ else if(type=="15pm"){			// 15 puzzle, mirrored
   do15puzzle(true);
  }
- else if(type=="clk"){      // Clock (Jaap order)
+ else if(type=="clk"){			// Clock (Jaap order)
   for(var n=0;n<num;n++){
    ss[n]="<tt><b><br>&nbsp;UU"+c("u")+"dU"+c("u")+"dd"+c("u")+"Ud"+c("u")+"dU"+c("u")+"Ud"+c("u")+"UU"+c("u")+"UU";
    ss[n]+=c("u")+"UU"+c("u")+"dd"+c3()+c2()+"<br>&nbsp;dd"+c("d")+"dU"+c("d")+"UU"+c("d")+"Ud"+c("d");
    ss[n]+="UU"+c3()+"UU"+c3()+"Ud"+c3()+"dU"+c3()+"UU"+c3()+"dd"+c("d")+c2()+"</b></tt><br>";
   }
  }
- else if(type=="clkc"){     // Clock (concise)
+ else if(type=="clkc"){			// Clock (concise)
   for(var n=0;n<num;n++){
    ss[n]="";
    for (var i=0;i<4;i++) ss[n]+="(" + (Math.floor(Math.random()*12)-5) + ", " + (Math.floor(Math.random()*12)-5) + ") / ";
@@ -1222,41 +1264,41 @@ function scrambleIt(){
    for (var i=0;i<4;i++) ss[n]+=rndEl(["d","U"]);
   }
  }
- else if(type=="clke"){     // Clock (efficient order)
+ else if(type=="clke"){			// Clock (efficient order)
   for(var n=0;n<num;n++){
    ss[n]="<tt><b><br>&nbsp;UU"+c("u")+"dU"+c("u")+"dU"+c("u")+"UU"+c("u")+"UU"+c("u")+"UU"+c("u")+"Ud"+c("u")+"Ud";
    ss[n]+=c("u")+"dd"+c("u")+"dd"+c3()+c2()+"<br>&nbsp;UU"+c3()+"UU"+c3()+"dU"+c("d")+"dU"+c3()+"dd";
    ss[n]+=c("d")+"Ud"+c3()+"Ud"+c("d")+"UU"+c3()+"UU"+c("d")+"dd"+c("d")+c2()+"</b></tt><br>";
   }
  }
- else if(type=="cm3"){      // Cmetrick
+ else if(type=="cm3"){			// Cmetrick
   megascramble([[["U<","U>","U2"],["E<","E>","E2"],["D<","D>","D2"]],[["R^","Rv","R2"],["M^","Mv","M2"],["L^","Lv","L2"]]],[""]);
  }
- else if(type=="cm2"){      // Cmetrick Mini
+ else if(type=="cm2"){			// Cmetrick Mini
   megascramble([[["U<","U>","U2"],["D<","D>","D2"]],[["R^","Rv","R2"],["L^","Lv","L2"]]],[""]);
  }
- else if(type=="223"){      // Domino/2x3x3
+ else if(type=="223"){			// Domino/2x3x3
   megascramble([[["U","U'","U2"]],[["R2","L2","R2 L2"]],[["F2","B2","F2 B2"]]],[""]);
  }
- else if(type=="flp"){      // Floppy Cube
+ else if(type=="flp"){			// Floppy Cube
   megascramble([["R","L"],["U","D"]],["2"]);
  }
- else if(type=="fto"){      // FTO/Face-Turning Octa
+ else if(type=="fto"){			// FTO/Face-Turning Octa
   megascramble([["U","D"],["F","B"],["L","BR"],["R","BL"]],["","'"]);
  }
- else if(type=="giga"){     // Gigaminx
+ else if(type=="giga"){			// Gigaminx
   gigascramble();
  }
- else if(type=="heli"){     // Helicopter Cube
+ else if(type=="heli"){			// Helicopter Cube
   helicubescramble();
  }
- else if(type=="mgmo"){     // Megaminx (old style)
+ else if(type=="mgmo"){			// Megaminx (old style)
   oldminxscramble();
  }
- else if(type=="mgmp"){     // Megaminx (Pochmann)
+ else if(type=="mgmp"){			// Megaminx (Pochmann)
   pochscramble(10,Math.ceil(len/10));
  }
- else if(type=="pyrm"){     // Pyraminx (random moves)
+ else if(type=="pyrm"){			// Pyraminx (random moves)
   megascramble([["U"],["L"],["R"],["B"]],["!","'"]);
   for(var n=0;n<num;n++){
    var cnt=0;
@@ -1270,19 +1312,19 @@ function scrambleIt(){
    ss[n]=ss[n].replace(/!/g,"");
   }
  }
- else if(type=="pyro"){     // Pyraminx (optimal random state)
+ else if(type=="pyro"){			// Pyraminx (optimal random state)
   getpyraoptscramble(0);
  }
- else if(type=="pyrso"){    // Pyraminx (suboptimal random state)
+ else if(type=="pyrso"){		// Pyraminx (suboptimal random state)
   getpyraoptscramble(8);
  }
- else if(type=="prco"){     // Pyraminx Crystal (old style)
+ else if(type=="prco"){			// Pyraminx Crystal (old style)
   megascramble([["F","B"],["U","D"],["L","DBR"],["R","DBL"],["BL","DR"],["BR","DL"]],minxsuff);
  }
- else if(type=="prcp"){     // Pyraminx Crystal (Pochmann)
+ else if(type=="prcp"){			// Pyraminx Crystal (Pochmann)
   pochscramble(10,Math.ceil(len/10));
  }
- else if(type=="r234"){     // 2x2x2 3x3x3 4x4x4 relay
+ else if(type=="r234"){			// 2x2x2 3x3x3 4x4x4 relay
   ss[0] = "<br> 2) ";
   get2x2optscramble(9);
   ss[0] += "<br> 3) ";
@@ -1291,7 +1333,7 @@ function scrambleIt(){
   len = 40;
   megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);;
  }
- else if(type=="r2345"){    // 2x2x2 3x3x3 4x4x4 5x5x5 relay
+ else if(type=="r2345"){		// 2x2x2 3x3x3 4x4x4 5x5x5 relay
   ss[0] = "<br> 2) ";
   get2x2optscramble(9);
   ss[0] += "<br> 3) ";
@@ -1303,7 +1345,7 @@ function scrambleIt(){
   len = 60;
   megascramble([["U","D","u","d"],["R","L","r","l"],["F","B","f","b"]],cubesuff);
  }
- else if(type=="r23456"){   // 2x2x2 3x3x3 4x4x4 5x5x5 relay
+ else if(type=="r23456"){		// 2x2x2 3x3x3 4x4x4 5x5x5 relay
   ss[0] = "<br> 2) ";
   get2x2optscramble(9);
   ss[0] += "<br> 3) ";
@@ -1318,7 +1360,7 @@ function scrambleIt(){
   len = 80;
   megascramble([["U","D","2U","2D","3U"],["R","L","2R","2L","3R"],["F","B","2F","2B","3F"]],cubesuff);
  }
- else if(type=="r234567"){    // 2x2x2 3x3x3 4x4x4 5x5x5 relay
+ else if(type=="r234567"){		// 2x2x2 3x3x3 4x4x4 5x5x5 relay
   ss[0] = "<br> 2) ";
   get2x2optscramble(9);
   ss[0] += "<br> 3) ";
@@ -1336,7 +1378,7 @@ function scrambleIt(){
   len = 100;
   megascramble([["U","D","2U","2D","3U","3D"],["R","L","2R","2L","3R","3L"],["F","B","2F","2B","3F","3B"]],cubesuff);
  }
- else if(type=="r3"){     // multiple 3x3x3 relay
+ else if(type=="r3"){			// multiple 3x3x3 relay
   var ncubes = len;
   len = 25;
   for (var i=0; i<ncubes; i++) {
@@ -1345,34 +1387,34 @@ function scrambleIt(){
   }
   len = ncubes;
  }
- else if(type=="sia113"){   // Siamese Cube (1x1x3 block)
+ else if(type=="sia113"){		// Siamese Cube (1x1x3 block)
   var n,s=[];
   megascramble([["U","u"],["R","r"]],cubesuff);
   for(n=0;n<num;n++){ss[n]+=" z2 ";}
   megascramble([["U","u"],["R","r"]],cubesuff);
  }
- else if(type=="sia123"){   // Siamese Cube (1x2x3 block)
+ else if(type=="sia123"){		// Siamese Cube (1x2x3 block)
   var n,s=[];
   megascramble([["U"],["R","r"]],cubesuff);
   for(n=0;n<num;n++){ss[n]+=" z2 ";}
   megascramble([["U"],["R","r"]],cubesuff);
  }
- else if(type=="sia222"){   // Siamese Cube (2x2x2 block)
+ else if(type=="sia222"){		// Siamese Cube (2x2x2 block)
   var n,s=[];
   megascramble([["U"],["R"],["F"]],cubesuff);
   for(n=0;n<num;n++){ss[n]+=" z2 y ";}
   megascramble([["U"],["R"],["F"]],cubesuff);
  }
- else if(type=="skb"){      // Skewb
+ else if(type=="skb"){			// Skewb
   megascramble([["R"],["L"],["B"],["U"]],["","'"]);
  }
- else if(type=="sq1h"){     // Square-1 (turn metric)
+ else if(type=="sq1h"){			// Square-1 (turn metric)
   sq1_scramble(1);
  }
- else if(type=="sq1t"){     // Square-1 (twist metric)
+ else if(type=="sq1t"){			// Square-1 (twist metric)
   sq1_scramble(0);
  }
- else if(type=="sq2"){      // Square-2
+ else if(type=="sq2"){			// Square-2
   var i;
   for(var n=0;n<num;n++){
    i=0;
@@ -1386,99 +1428,99 @@ function scrambleIt(){
    }
   }
  }
- else if(type=="sfl"){      // Super Floppy Cube
+ else if(type=="sfl"){			// Super Floppy Cube
   megascramble([["R","L"],["U","D"]],cubesuff);
  }
- else if(type=="ssq1t"){    // Super Square-1 (twist metric)
+ else if(type=="ssq1t"){		// Super Square-1 (twist metric)
   ssq1t_scramble();
  }
- else if(type=="ufo"){      // UFO
+ else if(type=="ufo"){			// UFO
   megascramble([["A"],["B"],["C"],[["U","U'","U2'","U2","U3"]]],[""]);
  }
- else if(type=="2gen"){     // 2-generator <R,U>
+ else if(type=="2gen"){			// 2-generator <R,U>
   megascramble([["U"],["R"]],cubesuff);
  }
- else if(type=="2genl"){    // 2-generator <L,U>
+ else if(type=="2genl"){		// 2-generator <L,U>
   megascramble([["U"],["L"]],cubesuff);
  }
- else if(type=="roux"){     // Roux-generator <M,U>
+ else if(type=="roux"){			// Roux-generator <M,U>
   megascramble([["U"],["M"]],cubesuff);
  }
- else if(type=="3gen_F"){   // 3-generator <F,R,U>
+ else if(type=="3gen_F"){		// 3-generator <F,R,U>
   megascramble([["U"],["R"],["F"]],cubesuff);
  }
- else if(type=="3gen_L"){   // 3-generator <R,U,L>
+ else if(type=="3gen_L"){		// 3-generator <R,U,L>
   megascramble([["U"],["R","L"]],cubesuff);
  }
- else if(type=="RrU"){      // 3-generator <R,r,U>
+ else if(type=="RrU"){			// 3-generator <R,r,U>
   megascramble([["U"],["R","r"]],cubesuff);
  }
- else if(type=="RrUu"){     // <R,r,U,u>
+ else if(type=="RrUu"){			// <R,r,U,u>
   megascramble([["U","u"],["R","r"]],cubesuff);
  }
- else if(type=="minx2g"){   // megaminx 2-gen
+ else if(type=="minx2g"){		// megaminx 2-gen
   megascramble([["U"],["R"]],minxsuff);
  }
- else if(type=="mlsll"){    // megaminx LSLL
+ else if(type=="mlsll"){		// megaminx LSLL
   megascramble([[["R U R'","R U2 R'","R U' R'","R U2' R'"]],[["F' U F","F' U2 F","F' U' F","F' U2' F"]],[["U","U2","U'","U2'"]]],[""]);
  }
- else if(type=="bic"){      // Bandaged Cube
+ else if(type=="bic"){			// Bandaged Cube
   bicube();
  }
- else if(type=="bsq"){      // Bandaged Square-1 </,(1,0)>
+ else if(type=="bsq"){			// Bandaged Square-1 </,(1,0)>
   sq1_scramble(2);
  }
- else if(type=="half"){     // 3x3x3 half turns
+ else if(type=="half"){			// 3x3x3 half turns
   megascramble([["U","D"],["R","L"],["F","B"]],["2"]);
  }
- else if(type=="edges"){    // 3x3x3 edges only
+ else if(type=="edges"){		// 3x3x3 edges only
   ss[0] = scramblers["333"].getEdgeScramble();
  }
- else if(type=="corners"){    // 3x3x3 corners only
+ else if(type=="corners"){		// 3x3x3 corners only
   ss[0] = scramblers["333"].getCornerScramble();
  }
- else if(type=="ll"){     // 3x3x3 last layer
+ else if(type=="ll"){			// 3x3x3 last layer
   ss[0] = scramblers["333"].getLLScramble();
  }
- else if(type=="lsll2"){    // 3x3x3 last slot + last layer
+ else if(type=="lsll2"){		// 3x3x3 last slot + last layer
   ss[0] = scramblers["333"].getLSLLScramble();
  }
- else if(type=="lsll"){     // 3x3x3 last slot + last layer (old)
+ else if(type=="lsll"){			// 3x3x3 last slot + last layer (old)
   megascramble([[["R U R'","R U2 R'","R U' R'"]],[["F' U F","F' U2 F","F' U' F"]],[["U","U2","U'"]]],[""]);
  }
- else if(type=="4edge"){    // 4x4x4 edges
+ else if(type=="4edge"){		// 4x4x4 edges
   edgescramble("r b2",["b2 r'", "b2 U2 r U2 r U2 r U2 r"],["u"]);
  }
- else if(type=="5edge"){    // 5x5x5 edges
+ else if(type=="5edge"){		// 5x5x5 edges
   edgescramble("r R b B",["B' b' R' r'", "B' b' R' U2 r U2 r U2 r U2 r"],["u","d"]);
  }
- else if(type=="6edge"){    // 6x6x6 edges
+ else if(type=="6edge"){		// 6x6x6 edges
   edgescramble("3r r 3b b",["3b' b' 3r' r'","3b' b' 3r' U2 r U2 r U2 r U2 r","3b' b' r' U2 3r U2 3r U2 3r U2 3r","3b' b' r2 U2 3R U2 3R U2 3R U2 3R"],["u","3u","d"]);
  }
- else if(type=="7edge"){    // 7x7x7 edges
+ else if(type=="7edge"){		// 7x7x7 edges
   edgescramble("3r r 3b b",["3b' b' 3r' r'","3b' b' 3r' U2 r U2 r U2 r U2 r","3b' b' r' U2 3r U2 3r U2 3r U2 3r","3b' b' r2 U2 3R U2 3R U2 3R U2 3R"],["u","3u","3d","d"]);
  }
- else if(type=="-1"){     // -1x-1x-1 (micro style)
+ else if(type=="-1"){			// -1x-1x-1 (micro style)
   for(var n=0;n<num;n++){
    for(var i=0;i<len;i++){ss[n]+=String.fromCharCode(32+Math.floor(Math.random()*224));}
    ss[n]+="Error: subscript out of range";
   }
  }
- else if(type=="112"){      // 1x1x2
+ else if(type=="112"){			// 1x1x2
   megascramble([["R"],["R"]],cubesuff);
  }
- else if(type=="333noob"){    // 3x3x3 for noobs
+ else if(type=="333noob"){		// 3x3x3 for noobs
   megascramble([["turn the top face","turn the bottom face"],["turn the right face","turn the left face"],["turn the front face","turn the back face"]],[" clockwise by 90 degrees,", " counterclockwise by 90 degrees,"," by 180 degrees,"]);
   for(var n=0;n<num;n++){
    ss[n]=ss[n].replace(/t/,"T");
    ss[n]=ss[n].substr(0,ss[n].length-2)+".";
   }
  }
- else if(type=="lol"){      // LOL
+ else if(type=="lol"){			// LOL
   megascramble([["L"],["O"]],[""]);
   for(var n=0;n<num;n++){ss[n]=ss[n].replace(/ /g,"");}
  }
- else if(type=="eide"){     // Derrick Eide
+ else if(type=="eide"){			// Derrick Eide
   megascramble([["OMG"],["WOW"],["WTF"],[["WOO-HOO","WOO-HOO","MATYAS","YES","YES","YAY","YEEEEEEEEEEEES"]],["HAHA"],["XD"],[":D"],["LOL"]],["","","","!!!"]);
  }
  scramble = ss[0];
@@ -1934,8 +1976,8 @@ function megascramble(turns, suffixes){
        <span class="hide"><font face="Arial" size="3">Scramble length:</font></span>
        <input value="25" id="leng" size="3" maxlength="3" onchange="rescramble3();">
       </td>
-    <td><span class="hide"><font face="Arial" size="3">Session:</font></span>
-     <select id="sessbox" size="1" onchange="getSession(); loadList(); getStats(true);"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+	  <td><span class="hide"><font face="Arial" size="3">Session:</font></span>
+	   <select id="sessbox" size="1" onchange="getSession(); loadList(); getStats(true);"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
       <td><a href="http://mzrg.com/qqtimer/megadoc.html" target="_blank" style="color: black;" class="a">Help!</a></td>
      </tr>
     </tbody></table>
