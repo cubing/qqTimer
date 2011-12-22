@@ -203,7 +203,12 @@ function initialize() {
  scramble = "";
  rescramble2();
 }
-
+function mouseUp(){
+    startTimer(32);
+}
+function mouseDown(){
+    stopTimer(32);   
+}
 function startTimer(keyCode) {
  if (timerStatus == 0 && !manualEnter && keyCode == 32) {
   timerStatus = 3;
@@ -264,8 +269,26 @@ function stopTimer(keyCode) {
  }
 }
 
-function checkKey(keyCode) {
- if (keyCode == 13 || !manualEnter) stopTimer(keyCode);
+function checkKey(event) {
+ var whichKey = event.keyCode;
+ if (event.keyCode == 82 && event.shiftKey){
+    resetTimes();
+ }
+ else if (whichKey == 49 && event.shiftKey) scramblepuzzle(1); // shift + 1: square-1
+ else if (whichKey == 50 && event.shiftKey) scramblepuzzle(2); // shift + 2: optimal 2x2x2
+ else if (whichKey == 51 && event.shiftKey) scramblepuzzle(3); // shift + 3
+ else if (whichKey == 52 && event.shiftKey) scramblepuzzle(4); // shift + 4
+ else if (whichKey == 53 && event.shiftKey) scramblepuzzle(5); // shift + 5
+ else if (whichKey == 54 && event.shiftKey) scramblepuzzle(6); // shift + 6
+ else if (whichKey == 55 && event.shiftKey) scramblepuzzle(7); // shift + 7
+ else if (whichKey == 68 && event.shiftKey) del(times.length - 1);
+ else if (event.keyCode == 13 || !manualEnter){ stopTimer(event.keyCode)};
+}
+
+function scramblepuzzle(n){
+  if (n==1) document.getElementById('optbox').selectedIndex=10;
+  else document.getElementById('optbox').selectedIndex=n-1;
+  rescramble();
 }
 
 function updateTimer() {
@@ -1397,7 +1420,7 @@ function megascramble(turns, suffixes){
 
 // -->
  </script>
-</head><body onload="initialize()" onkeyup="startTimer(event.keyCode);" onkeydown="checkKey(event.keyCode);">
+</head><body onload="initialize()" onkeyup="startTimer(event.keyCode);" onkeydown="checkKey(event);">
  <table border="1" cellpadding="5" cellspacing="0" width="100%">
   <tbody><tr>
    <td colspan="3" id="menu" bgcolor="#00ff00">
@@ -1433,6 +1456,7 @@ function megascramble(turns, suffixes){
    <td style="width: 15em;">
     <div id="stats" style="overflow-y: scroll; height: 16em;"></div>
    </td>
+   <td onmousedown="mouseDown()" onmouseup="mouseUp()"></td>
   </tr>
   <tr id="options" style="display: none;">
    <td colspan="3">
