@@ -290,19 +290,19 @@ function getTime(note) {
  curTime = new Date();
  
  if (useBld==1) { 
-	var time = curTime.getTime() - memoTime.getTime(); 
-	var mtime = startTime.getTime() - memoTime.getTime();	
+  var time = curTime.getTime() - memoTime.getTime(); 
+  var mtime = startTime.getTime() - memoTime.getTime();	
  } 
  else {
-	var time = curTime.getTime() - startTime.getTime();
+  var time = curTime.getTime() - startTime.getTime();
  }
  times[times.length] = time;
  notes[notes.length] = note;
  if (useBld==1) { 
-	comments[comments.length] = pretty(mtime) 
+  comments[comments.length] = pretty(mtime) 
  }
  else { 
-	comments[comments.length] = ""; 
+  comments[comments.length] = ""; 
  }
  $('theTime').innerHTML = pretty(time);
  clearHighlight();
@@ -350,7 +350,13 @@ function loadList() {
  var s = "times (<span onclick='resetTimes();' class='a'>reset</span>, <span onclick='toggleImport();' class='a'>import</span>):<br>"
  // get the best and worst time for the highlighted average
  if (highlightStop != -1 && (highlightStop - highlightStart) > 1) {
-  data = getAvgSD(highlightStart, highlightStop - highlightStart + 1, false);
+  var mean = 0;
+  if (highlightID > 10 && (highlightID%10)>1) mean = 1; // check to see if this is a mean-of-N or not
+  if (mean) {
+   data = getMeanSD(highlightStart, highlightStop - highlightStart + 1, false);
+  } else {
+   data = getAvgSD(highlightStart, highlightStop - highlightStart + 1, false);
+  }
  }
  for (var i = 0; i < times.length; i++) {
   if (i == highlightStart) {s += "<span style='background-color: " + highlightColor + "'>";}
@@ -541,14 +547,14 @@ function toggleAvgN() {
  useAvgN = 1 - useAvgN;
  setCookie("useAvgN", useAvgN);
  $('avgn').innerHTML = (useAvgN==1) ? "using" : "not using";
- getStats(useAvgN==1 || useMoN==1);
+ getStats(true);
 }
 
 function toggleMoN() {
  useMoN = 1 - useMoN;
  setCookie("useMoN", useMoN);
  $('mon').innerHTML = (useMoN==1) ? "using" : "not using";
- getStats(useAvgN==1 || useMoN==1);
+ getStats(true);
 }
 
 function toggleStatView() {
@@ -739,7 +745,9 @@ function getSession() {
 // #################### STATISTICS ####################
 
 
-var avgSizes, bestAvg, lastAvg, bestAvgIndex, bestTime, bestTimeIndex, worstTime, worstTimeIndex, moSize, bestMo, lastMo, bestMoIndex;
+var avgSizes, bestAvg, lastAvg, bestAvgIndex;
+var bestTime, bestTimeIndex, worstTime, worstTimeIndex;
+var moSize, bestMo, lastMo, bestMoIndex;
 
 function getStats(recalc) {
  var avgSizes2 = (avgSizes.slice(1 - useAvgN)).sort(numsort);
@@ -798,10 +806,10 @@ function getStats(recalc) {
   if (useMoN==1) {
    if (times.length >= moSize) {
     s += "<br>current mo" + moSize + ": <span onclick='setHighlight(" + (times.length - moSize);
-    s += "," + moSize + "," + moSize + "1);loadList();' class='a'>" + pretty(lastMo[0]);
+    s += "," + moSize + "," + moSize + "2);loadList();' class='a'>" + pretty(lastMo[0]);
     s += "<\/span> (&sigma; = " + trim(lastMo[1], 2) + ")<br>";
     s += "best mo" + moSize + ": <span onclick='setHighlight(" + bestMoIndex;
-    s += "," + moSize + "," + moSize + "0);loadList();' class='a'>" + pretty(bestMo[0]);
+    s += "," + moSize + "," + moSize + "3);loadList();' class='a'>" + pretty(bestMo[0]);
     s += "<\/span> (&sigma; = " + trim(bestMo[1], 2) + ")<br>";
    }
   }
@@ -836,6 +844,9 @@ function getAllStats() {
  worstTimeIndex = 0;
  var numdnf = 0;
  var sessionsum = 0;
+ bestMo = [-1,0];
+ lastMo = [-1,0];
+ bestMoIndex = 0;
  for (var i = 0; i < times.length; i++) {
   var thisTime = (notes[i] == 1) ? -1 : times[i] + notes[i] * 1000;
   if (bestTime < 0 || (thisTime != -1 && thisTime < bestTime)) {
@@ -848,6 +859,7 @@ function getAllStats() {
   }
   if (thisTime == -1) {numdnf++;}
   else {sessionsum += thisTime;}
+
   // calculate averages
   for (var j = 0; j < avgSizes2.length; j++) {
    if (times.length - i < avgSizes2[j]) {
@@ -860,7 +872,17 @@ function getAllStats() {
     }
    }
   }
+
+  // calculate mean
+  if (times.length - i >= moSize) {
+   lastMo = getMeanSD(i, moSize, true);
+   if (bestMo[0] < 0 || (lastMo[0] != -1 && lastMo[0] < bestMo[0])) {
+    bestMo = lastMo;
+    bestMoIndex = i;
+   }
+  }
  }
+
  var sessionavg = getAvgSD(0, times.length, true);
  var sessionmean = (numdnf == times.length) ? -1 : (sessionsum / (times.length - numdnf));
 
@@ -876,17 +898,30 @@ function setHighlight(start, nsolves, id) {
  if (id == highlightID) {
   clearHighlight();
  } else {
+  var mean = 0;
+  if (id > 10 && (id%10)>1) mean = 1; // check to see if this is a mean-of-N or not
   highlightStart = start;
   highlightStop = start + nsolves - 1;
   highlightID = id;
+
   if (times.length == 0) return;
   var data = [0,[null],[null]];
   if (highlightStop != -1 && (highlightStop - highlightStart) > 1) {
-   data = getAvgSD(highlightStart, highlightStop - highlightStart + 1, false);
+   if (mean) {
+    data = getMeanSD(highlightStart, highlightStop - highlightStart + 1, false);
+   } else {
+    data = getAvgSD(highlightStart, highlightStop - highlightStart + 1, false);
+   }
   }
   var s="";
   if (id > 1) {
-   s += (id==2)?"Session average":"Average of "+Math.floor(id/10);
+   if (id==2) {
+    s += "Session average";
+   } else if (mean) {
+    s += "Mean of "+Math.floor(id/10);
+   } else {
+    s += "Average of "+Math.floor(id/10);
+   }
    s += ": " + pretty(data[0]) + "<br>";
   }
   for (var i=0; i<nsolves; i++) {
@@ -959,7 +994,7 @@ function dropTime(arr) {
  return newArr;
 }
 
-function getMeanSD(start, nsolves) {
+function getMeanSD(start, nsolves, SD) {
  // get list of times
  var timeArr = [], t, j;
  for (j=0; j<nsolves; j++) {
@@ -976,14 +1011,17 @@ function getMeanSD(start, nsolves) {
  }
  var mean = (timeArr[nsolves-1][0]<0 ? -1 : sum/nsolves);
 
- // SD
- var variance = 0; 
- for (j=0; j<nsolves; j++) {
-  t = (notes[start+j]==1 ? -1 : times[start+j]/10 + notes[start+j]*100);
-  t = (useMilli==0 ? Math.round(t)/100 : t/100);
-  variance += Math.pow(t - mean/1000, 2);
+ // get SD
+ if (SD) {
+  var variance = 0; 
+  for (j=0; j<nsolves; j++) {
+   variance += Math.pow((timeArr[j][0] - mean)/1000, 2);
+  }
+  variance = Math.sqrt(variance / (nsolves - 1));
+  return [mean, variance];
+ } else {
+  return [mean, [], []];
  }
- return [mean, Math.sqrt(variance / (nsolves - 1))];
 }
 
 function trim(number, nDigits) {

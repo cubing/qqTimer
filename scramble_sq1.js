@@ -1138,7 +1138,6 @@ function drawSq(stickers, middleIsSolved, shapes, parentElement, colorString) {
     /* Other methods */
     getRandomPosition: square1SolverGetRandomPosition,
     solve: square1SolverSolve,
-    senerate: square1SolverGenerate,
-  };
+    senerate: square1SolverGenerate  };
 
 })();

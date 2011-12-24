@@ -1638,7 +1638,7 @@ function drawSquare(r, cx, cy, w, fillColor) {
       "F": colorString[2],
       "L": colorString[3],
       "B": colorString[4],
-      "D": colorString[5],
+      "D": colorString[5]
     };
 
     var r = Raphael(parentElement, border*2+width*12, border*2+width*9);
@@ -1802,11 +1802,11 @@ function drawSquare(r, cx, cy, w, fillColor) {
     getRandomScramble: getRandomScramble,
     drawScramble: drawScramble,
 
-    /* Other methods */
+    /* added methods */
     getEdgeScramble: getEdgeScramble,
     getCornerScramble: getCornerScramble,
     getLLScramble: getLLScramble,
-    getLSLLScramble: getLSLLScramble,
+    getLSLLScramble: getLSLLScramble
   };
 
 })();
