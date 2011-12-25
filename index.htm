@@ -1968,23 +1968,16 @@ function megascramble(turns, suffixes){
    do{
     var first=Math.floor(Math.random()*turns.length);
     var second=Math.floor(Math.random()*turns[first].length);
-    if(first!=lastaxis||donemoves[second]==0){
-     if(first==lastaxis){
-      donemoves[second]=1;
-      if(isArray(turns[first][second])){
-       s+=rndEl(turns[first][second])+rndEl(suffixes)+" ";
-      }else{
-       s+=turns[first][second]+rndEl(suffixes)+" ";
-      }
+    if (first!=lastaxis) {
+     for(k=0;k<turns[first].length;k++){donemoves[k]=0;}
+     lastaxis=first;
+    }
+    if (donemoves[second]==0) {
+     donemoves[second]=1;
+     if(isArray(turns[first][second])){
+      s+=rndEl(turns[first][second])+rndEl(suffixes)+" ";
      }else{
-      for(k=0;k<turns[first].length;k++){donemoves[k]=0;}
-      lastaxis=first;
-      donemoves[second]=1;
-      if(isArray(turns[first][second])){
-       s+=rndEl(turns[first][second])+rndEl(suffixes)+" ";
-      }else{
-       s+=turns[first][second]+rndEl(suffixes)+" ";
-      }
+      s+=turns[first][second]+rndEl(suffixes)+" ";
      }
      done=1;
     }
