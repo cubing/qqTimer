@@ -37,6 +37,10 @@ function $(str){return document.getElementById(str);}
 var styleName = "style" + ((a=getCookie("style"))==null?0:a) + ".css";
 document.writeln("<link rel='stylesheet' type='text/css' href='"+styleName+"'>");
 
+// firefox 9.0.1 bugfix
+window.onkeydown = function(event) {checkKey(event.keyCode); };
+window.onkeyup = function(event) {startTimer(event.keyCode); };
+
 function initialize(lookForTimes, checkQueryString) {
  loadOptBoxes();
  var query = ""; // query string for scrambles
@@ -74,11 +78,23 @@ function initialize(lookForTimes, checkQueryString) {
  $('toggler').innerHTML = (timerupdate==0) ? "off" : (timerupdate==1) ? "on" : "seconds only";
  useMilli = (a=getCookie("useMilli"))===null ? 0 : a;
  $('millisec').innerHTML = (useMilli==1) ? "1\/1000 sec" : "1\/100 sec";
- manualenter = (a=getCookie("manualEnter"))===null ? 0 : a;
+ var oldManualEnter = manualEnter;
+ manualEnter = (a=getCookie("manualEnter"))===null ? 0 : a;
+ if (manualEnter!=oldManualEnter) {
+  toggleInput();
+  manualEnter = 1-manualEnter;
+ }
+ $('tcol').value = (a=getCookie("tColor"))===null ? "00ff00" : a;
+ $('bcol').value = (a=getCookie("bColor"))===null ? "white" : a;
+ $('fcol').value = (a=getCookie("fColor"))===null ? "black" : a;
+ $('lcol').value = (a=getCookie("lColor"))===null ? "blue" : a;
+ $('hcol').value = (a=getCookie("hColor"))===null ? "yellow" : a;
+ $('memcol').value = (a=getCookie("memColor"))===null ? "green" : a;
  $('inputTimes').innerHTML = (manualEnter==1) ? "typing" : "timer";
  $('theTime').innerHTML = (manualEnter==1) ?
   "<input id='timeEntry' size=12 style='font-size:100%'>"+
-  " <span onclick='stopTimer(13);' class='a'>enter</span>" : "ready";
+  " <span onclick='stopTimer(13);' class='a' style='color:"+
+  parseColor($('lcol').value)+"'>enter</span>" : "ready";
  timerSize = (a=getCookie("timerSize"))===null ? 2 : a;
  $('theTime').style.fontSize = timerSize + "em";
  scrambleSize = (a=getCookie("scrSize"))===null ? 16 : parseInt(a,10);
@@ -95,12 +111,6 @@ function initialize(lookForTimes, checkQueryString) {
  $('avgn').innerHTML = (useAvgN==1) ? "using" : "not using";
  useMoN = (a=getCookie("useMoN"))===null ? 0 : a;
  $('mon').innerHTML = (useMoN==1) ? "using" : "not using";
- $('tcol').value = (a=getCookie("tColor"))===null ? "00ff00" : a;
- $('bcol').value = (a=getCookie("bColor"))===null ? "white" : a;
- $('fcol').value = (a=getCookie("fColor"))===null ? "black" : a;
- $('lcol').value = (a=getCookie("lColor"))===null ? "blue" : a;
- $('hcol').value = (a=getCookie("hColor"))===null ? "yellow" : a;
- $('memcol').value = (a=getCookie("memColor"))===null ? "green" : a;
  useMono = (a=getCookie("useMono"))===null ? 0 : a;
  $('monospace').innerHTML = (useMono==1) ? "on" : "off";
  $('scramble').style.fontFamily = (useMono==1) ? "monospace" : "serif";
@@ -496,7 +506,8 @@ function toggleInput() {
  $('inputTimes').innerHTML = (manualEnter==1) ? "typing" : "timer";
  $('theTime').innerHTML = (manualEnter==1) ?
   "<input id='timeEntry' size=12 style='font-size:100%'>"+
-  " <span onclick='stopTimer(13);' class='a'>enter</span>" : "ready";
+  " <span onclick='stopTimer(13);' class='a' style='color:"+
+  parseColor($('lcol').value)+"'>enter</span>" : "ready";
 }
 
 function toggleOptions() {
@@ -1156,15 +1167,15 @@ var minxsuff=["","2","'","2'"];
 
 // data for all scramblers
 var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
- ["2x2x2",[["suboptimal random state","222so",11],["optimal random state","222o",0],["3-gen","2223",25],["6-gen",2226,25]]],
- ["3x3x3",[["suboptimal random state","333",0],["old style","333o",25]]],
+ ["2x2x2",[["random state","222so",11],["optimal random state","222o",0],["3-gen","2223",25],["6-gen",2226,25]]],
+ ["3x3x3",[["random state","333",0],["old style","333o",25]]],
  ["4x4x4",[["SiGN","444",40],["WCA","444wca",40],["YJ (place fixed center on Urf)","444yj",40]]],
  ["5x5x5",[["SiGN","555",60],["WCA","555wca",60]]],
  ["6x6x6",[["SiGN","666si",80],["prefix","666p",80],["suffix","666s",80]]],
  ["7x7x7",[["SiGN","777si",100],["prefix","777p",100],["suffix","777s",100]]],
  ["Clock",[["Jaap order","clk",0],["concise","clkc",0],["efficient pin order","clke",0]]],
  ["Megaminx",[["Pochmann","mgmp",70],["old style","mgmo",70]]],
- ["Pyraminx",[["suboptimal random state","pyrso",11],["optimal random state","pyro",0],["random moves","pyrm",25]]],
+ ["Pyraminx",[["random state","pyrso",11],["optimal random state","pyro",0],["random moves","pyrm",25]]],
  ["Square-1",[["face turn metric","sq1h",40],["twist metric","sq1t",20],["random state","sqrs",0]]],
  ["===OTHER PUZZLES===",[["--","blank",0]]],
  ["15 puzzle",[["piece moves","15p",80],["blank moves","15pm",80]]],
@@ -1172,6 +1183,11 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["2x3x3 (Domino)",[[" ","223",25]]],
  ["3x3x4",[[" ","334",40]]],
  ["3x3x5",[["shapeshifting","335",25]]],
+ ["3x3x6",[[" ","336",40]]],
+ ["3x3x7",[["shapeshifting","337",40]]],
+ ["8x8x8",[["SiGN","888",120]]],
+ ["9x9x9",[["SiGN","999",120]]],
+ ["11x11x11",[["SiGN","111111",120]]],
  ["Cmetrick",[[" ","cm3",25]]],
  ["Cmetrick Mini",[[" ","cm2",25]]],
  ["Domino (2x3x3)",[[" ","223",25]]],
@@ -1226,27 +1242,45 @@ function scrambleIt(){
  else if(type=="222o"){			// 2x2x2 (optimal random state)
   get2x2optscramble(0);
  }
- else if(type=="222so"){		// 2x2x2 (suboptimal random state)
+ else if(type=="222so"){		// 2x2x2 (random state)
   get2x2optscramble(9);
  }
  else if(type=="333o"){			// 3x3x3 (old style)
   megascramble([["U","D"],["R","L"],["F","B"]],cubesuff);
  }
- else if(type=="333"){		// 3x3x3 (suboptimal random state)
-   ss[0]=scramblers["333"].getRandomScramble();
+ else if(type=="333"){		        // 3x3x3 (random state)
+  ss[0]=scramblers["333"].getRandomScramble();
  }
- else if(type=="sqrs"){		// square-1 (suboptimal random state)
-   if (initoncesq1==1) { scramblers['sq1'].initialize(null, Math); initoncesq1=0; }
-   ss[0]=scramblers["sq1"].getRandomScramble().scramble;
+ else if(type=="sqrs"){	          	// square-1 (random state)
+  if (initoncesq1==1) { scramblers['sq1'].initialize(null, Math); initoncesq1=0; }
+  ss[0]=scramblers["sq1"].getRandomScramble().scramble;
  }
  else if(type=="334"){			// 3x3x4
-  megascramble([[["U","U'","U2","D","D'","D2"],["u","u'","u2","d","d'","d2"]],[["R2","L2","R2 L2"]],[["F2","B2","F2 B2"]]],[""]);
+  megascramble([[["U","U'","U2", "u", "u'", "u2", "U u", "U u'", "U u2", "U' u", "U' u'", "U' u2", "U2 u", "U2 u'", "U2 u2"]],[["R2","L2","M2"]],[["F2","B2","S2"]]],[""]);
  }
  else if(type=="335"){			// 3x3x5
   var n;
   megascramble([[["U","U'","U2"], ["D", "D'", "D2"]],["R2","L2"],["F2","B2"]],[""]);
   for(n=0;n<num;n++){ss[n]+=" / ";}
-  megascramble([["U","D"],["R","L"],["F","B"]],cubesuff);
+  ss[0] += scramblers["333"].getRandomScramble();
+ }
+ else if(type=="336"){			// 3x3x6
+  megascramble([[["U","U'","U2","u","u'","u2","U u","U u'","U u2","U' u","U' u'","U' u2","U2 u","U2 u'","U2 u2","3u","3u'","3u2","U 3u","U' 3u","U2 3u","u 3u","u' 3u","u2 3u","U u 3u","U u' 3u","U u2 3u","U' u 3u","U' u' 3u","U' u2 3u","U2 u 3u","U2 u' 3u","U2 u2 3u","U 3u'","U' 3u'","U2 3u'","u 3u'","u' 3u'","u2 3u'","U u 3u'","U u' 3u'","U u2 3u'","U' u 3u'","U' u' 3u'","U' u2 3u'","U2 u 3u'","U2 u' 3u'","U2 u2 3u'","U 3u2","U' 3u2","U2 3u2","u 3u2","u' 3u2","u2 3u2","U u 3u2","U u' 3u2","U u2 3u2","U' u 3u2","U' u' 3u2","U' u2 3u2","U2 u 3u2","U2 u' 3u2","U2 u2 3u2"]],[["R2","L2","M2"]],[["F2","B2","S2"]]],[""]);
+ }
+ else if(type=="337"){			// 3x3x7
+  var n;
+  megascramble([[["U","U'","U2","u","u'","u2","U u","U u'","U u2","U' u","U' u'","U' u2","U2 u","U2 u'","U2 u2"], ["D","D'","D2","d","d'","d2","D d","D d'","D d2","D' d","D' d'","D' d2","D2 d","D2 d'","D2 d2"]],["R2","L2"],["F2","B2"]],[""]);
+  for(n=0;n<num;n++){ss[n]+=" / ";}
+  ss[0] += scramblers["333"].getRandomScramble();
+ }
+ else if(type=="888"){			// 8x8x8 (SiGN)
+  megascramble([["U","D","u","d","3u","3d","4u"],["R","L","r","l","3r","3l","4r"],["F","B","f","b","3f","3b","4f"]],cubesuff);
+ }
+ else if(type=="999"){			// 9x9x9 (SiGN)
+  megascramble([["U","D","u","d","3u","3d","4u","4d"],["R","L","r","l","3r","3l","4r","4l"],["F","B","f","b","3f","3b","4f","4b"]],cubesuff);
+ }
+ else if(type=="111111"){		// 11x11x11 (SiGN)
+  megascramble([["U","D","u","d","3u","3d","4u","4d","5u","5d"],["R","L","r","l","3r","3l","4r","4l","5r","5l"],["F","B","f","b","3f","3b","4f","4b","5f","5b"]],cubesuff);
  }
  else if(type=="444"){			// 4x4x4 (SiGN)
   megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);
@@ -1353,7 +1387,7 @@ function scrambleIt(){
  else if(type=="pyro"){			// Pyraminx (optimal random state)
   getpyraoptscramble(0);
  }
- else if(type=="pyrso"){		// Pyraminx (suboptimal random state)
+ else if(type=="pyrso"){		// Pyraminx (random state)
   getpyraoptscramble(8);
  }
  else if(type=="prco"){			// Pyraminx Crystal (old style)
@@ -1991,7 +2025,7 @@ function megascramble(turns, suffixes){
  </script>
 
 </head>
-<body onload="initialize(true, true);" onkeyup="startTimer(event.keyCode);" onkeydown="checkKey(event.keyCode);">
+<body onload="initialize(true, true);">
  <div id="container">
  <table border="1" cellpadding="5" cellspacing="0" width="100%">
   <tbody><tr>
