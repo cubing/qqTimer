@@ -624,6 +624,10 @@ function resetColors() {
 
 /* setCookie and getCookie functions originally from http://www.quirksmode.org/js/cookies.html */
 function setCookie(name,value) {
+ if (typeof window.localStorage !== "undefined") {
+   window.localStorage.setItem(name,value);
+   return;
+ }
  var expires = "; expires=" + new Date(3000, 00, 01).toGMTString() + "; path=/";
  var cookies = document.cookie.split(';');
  var x = "qqTimer=";
@@ -659,6 +663,9 @@ function setCookie(name,value) {
 }
 
 function getCookie(name) {
+ if (typeof window.localStorage !== "undefined") {
+   return window.localStorage.getItem(name);
+ }
  var cookies = document.cookie.split(';');
  var x = "qqTimer=";
  for (var i=0; i<cookies.length; i++) {
