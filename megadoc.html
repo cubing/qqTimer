@@ -1,0 +1,144 @@
+﻿<html><head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Documentation for the qqTimer</title></head><body>
+
+<h2>Documentation for qqTimer</h2>
+<h3>Features and Functions:</h3>
+<ul>
+<li>The timer starts when you release the spacebar and stops when you press it.</li>
+<li>By default, the timer updates while it's timing, but if you want you can stop it from updating by clicking the link above the timer. You can also set it to update every second.</li>
+<li>You can change the size of the timer and scrambles, for better visibility during videos.</li>
+<li>Choose any scramble type or scramble length and a new scramble will automatically be generated for it. There are a lot of scrambles! See below for details.</li>
+<li>Once you've recorded a time, a new scramble will automatically appear. If you got a really nice time and want to look at the last scramble, just click the "last scramble" link after the scramble and it will appear. You can also see the scrambles of past solves when you view an average.</li>
+<li>You can either display times and averages to the nearest hundredth of a second (centisecond) or to the nearest thousandth (millisecond). Internally all times are accurate to the nearest millisecond, so you won't lose any data by temporarily switching to centisecond timing.</li>
+<li>If the last time was a +2 or DNF, clicking the links below the timer will change it. If you want to delete a time, click on it and a dialog box will pop up asking if you're sure.</li>
+<li>Near the +2 and DNF buttons, there is a button to add a comment to a solve. You can add any comment you want - I suggest notes about parities and skips.</li>
+<li>Set manual time entry in the options if you're using another timer or a Stackmat, but you still want to use the scrambles or statistics from this timer. You can also import previously gotten times.</li>
+<li>There is an inspection setting, which is based on the rules for official WCA competitions. Start the timer for inspection, and then start the timer again for the solve. If you start within 15 seconds there is no penalty; if you start from 15-17 seconds you get a +2 penalty; and if you start after 17 seconds the solve is a DNF.</li>
+<li>Your best time, worst time, session average and mean, and best and current average of 5, 12, 100, and 1000 are displayed, and automatically updated whenever you set or update a time. You can also use one custom Mean of N and one custom Average of N.</li>
+<li>qqTimer will store 5 different sessions of times, which are saved even when you exit out of the progrma. To delete all of your times from the current session, just click the reset button above your times.</li>
+<li>There are two different "looks" of this timer, and you can switch them using the options.</li>
+<li>There are six different colors in the timer, which can all be customized to your liking.</li>
+<li>If you're doing BLD solves, you can turn on BLD mode, which requires you to stop the timer twice for each solve. The first time, it will record your memorization time, but the timer won't stop. The second time, the full time will be saved, and the memorization time will be saved as a comment.</li>
+</ul>
+
+<h3>WCA Puzzles:</h3>
+Note: When you select a puzzle, if there are multiple possible scramblers, the one that is used is the one I personally recommend. You can still use the others, of course.
+<ul>
+<li><b>2x2x2</b>: Standard types of scrambles.<ul>
+ <li><b>random state</b>: Chooses a random position, then provides a short solution. Very easy scrambles will provide sub-optimal scrambles so it isn't obvious that the position is easy. Thanks to Tom van der Zanden and Jaap Scherphuis.</li>
+ <li><b>optimal random state</b>: Chooses a random position, then provides an optimal solution. Thanks to Tom van der Zanden and Jaap Scherphuis.</li>
+ <li><b>3-gen</b>: Uses only U, R, and F turns.</li>
+ <li><b>6-gen</b>: Allows turns of all six sides.</li></ul></li>
+<li><b>3x3x3</b>: Standard types of scrambles.<ul>
+ <li><b>random state</b>: Chooses a random position, then provides a short solution. This is the same as in Lucas Garron's Mark 2 scrambler. Thanks to Shuang Chen and Lucas Garron.</li>
+ <li><b>old style</b>: Generates random turns of all six sides.</li></ul></li>
+<li><b>4x4x4</b>: Standard multislice scrambler - uses double-layer turns of R, U, and F only.<ul>
+ <li><b>SiGN</b>: Uses r for a double layer turn.</li>
+ <li><b>WCA</b>: Uses Rw for a double layer turn.</li>
+ <li><b>YJ</b>: Scrambles the YJ 4x4x4, avoiding moves that cause problems due to the mechanism too much.</li></ul></li>
+<li><b>5x5x5</b>: Standard multislice scrambler.<ul>
+ <li><b>SiGN</b>: Uses r for a double layer turn.</li>
+ <li><b>WCA</b>: Uses Rw for a double layer turn.</li></ul></li>
+<li><b>6x6x6</b>: Standard multislice scrambler; uses triple-layer turns of R, U, and F only.<ul>
+ <li><b>SiGN</b>: Uses r and 3r for double- and triple-layer turns, respectively.</li>
+ <li><b>Prefix</b>: Uses 2R and 3R for double- and triple-layer turns, respectively.</li>
+ <li><b>Suffix</b>: Uses R² and R³ for double- and triple-layer turns, respectively.</li></ul></li>
+<li><b>7x7x7</b>: Standard multislice scrambler.<ul>
+ <li><b>SiGN</b>: Uses r and 3r for double- and triple-layer turns, respectively.</li>
+ <li><b>Prefix</b>: Uses 2R and 3R for double- and triple-layer turns, respectively.</li>
+ <li><b>Suffix</b>: Uses R² and R³ for double- and triple-layer turns, respectively.</li></ul></li>
+<li><b>Clock</b>: Unlike typical Clock scrambles these are horizontal, but they work the same as WCA scrambles. For turns, do a u turn on any corner next to a U peg (a peg pointed towards you), and do a d turn on any corner next to a d peg (a peg pointed away from you). If there is no turn given, just do nothing. The final set of pegs is the way the pegs should be positioned when you begin the solve.<ul>
+ <li><b>Jaap order</b>: Orders the moves in the same way as the WCA scrambler.</li>
+ <li><b>concise</b>: Same as Jaap order, but without describing the peg setups - for experienced solvers.</li>
+ <li><b>efficient order</b>: Orders the moves in a way that makes scrambling slightly faster.</li></ul></li>
+<li><b>Megaminx</b>: The dodecahedral 3x3-like puzzle.<ul>
+ <li><b>Pochmann</b>: The scrambles for this are similar to the WCA's Pochmann-type scrambler: R means to turn the entire puzzle minus the left face (like an r turn on 3x3), D means to turn the entire puzzle minus the top face (like a d turn on 3x3), and U means to just turn the top layer. Note that the given scramble length is rounded up to make an even number of 10-move 'lines'.</li>
+ <li><b>old style</b>: Each side has a name, and the puzzle is scrambled with random moves. This scrambler is harder to use, but gives better scrambles.</li></ul></li>
+<li><b>Pyraminx</b>: Capital letters are double-layer turns and lowercase letters are tip turns.<ul>
+ <li><b>random state</b>: Chooses a random position, then provides a short solution. Very easy scrambles will provide sub-optimal scrambles so it isn't obvious that the position is easy. Thanks to Lucas Garron and Jaap Scherphuis.</li>
+ <li><b>optimal random state</b>: Chooses a random position, then provides an optimal solution. Thanks to Lucas Garron and Jaap Scherphuis.</li>
+ <li><b>random moves</b>: 25 random moves, like the WCA scrambler. The scrambles always have the same number of moves even though the number of tip turns varies.</li></ul></li>
+<li><b>Square-1</b>: The (x,y) notation means to turn the top layer x stickers clockwise and the bottom layer y stickers clockwise. A negative number means counterclockwise. A / means to turn the right half of the puzzle by 180 degrees.<ul>
+ <li><b>face turn metric</b>: Just like on the 3x3x3, every move of a layer counts as one turn.</li>
+ <li><b>twist metric</b>: Only the / moves are counted towards the scramble length.</li>
+ <li><b>random state</b>: Chooses a random position, then provides a short solution. Note that this scrambler can take a lot of time to initialize on some browsers. This is the same as in Lucas Garron's Mark 2 scrambler. Thanks to Walter Souza and Lucas Garron.</li></ul></li>
+</ul>
+
+<h3>Other Puzzles:</h3>
+These puzzles are not used in WCA events, but they're still popular enough that you may want to time them.
+<ul>
+<li><b>15 puzzle</b>: The classic puzzle by Sam Loyd.<ul>
+ <li><b>piece moves</b>: Describes the moves of pieces into the blank space.</li>
+ <li><b>blank moves</b>: Describes the way the blank space moves.</li></ul></li>
+<li><b>3x3x4</b>: Scrambler for the 3x3x4 cuboid. Hold the puzzle so that the long axis is vertical.</li>
+<li><b>3x3x5</b>: Scrambler for the shapeshifting 3x3x5 cuboid. Hold the puzzle so that the long axis is vertical. Then, use the first set of moves to scramble turning only the topmost and bottommost layers of the long axis, and use the second set of moves to scramble the middle of the puzzle like a 3x3x3.</li>
+<li><b>3x3x6</b>: Scrambler for the 3x3x4 cuboid. Hold the puzzle so that the long axis is vertical.</li>
+<li><b>3x3x7</b>: Scrambler for the shapeshifting 3x3x5 cuboid. Hold the puzzle so that the long axis is vertical. Then, use the first set of moves to scramble turning only the topmost and bottommost layers of the long axis, and use the second set of moves to scramble the middle of the puzzle like a 3x3x3.</li>
+<li><b>8x8x8</b>: Multislice scrambler, with SiGN. Uses r, 3r, and 4r for 2-layer, 3-layer, and 4-layer turns.</li>
+<li><b>9x9x9</b>: Multislice scrambler, with SiGN. Uses r, 3r, and 4r for 2-layer, 3-layer, and 4-layer turns.</li>
+<li><b>11x11x11</b>: Multislice scrambler, with SiGN. Uses r, 3r, 4r, and 5r for 2-layer, 3-layer, 4-layer, and 5-layer turns.</li>
+<li><b>Cmetrick</b>: The vertical layers are L, M, R and the horizontal layers are U, E, D. If you see an arrow, turn the layer by 90 degrees in that direction; if you see a 2 turn the layer by 180 degrees in either direction.</li>
+<li><b>Cmetrick Mini</b>: Same as Cmetrick, except that the vertical layers are only L and R, and the horizontal layers are only U and D.</li>
+<li><b>Domino (2x2x3)</b>: The scrambles for this use standard 3x3x3 notation. No D turns are used, only U turns.</li>
+<li><b>Floppy Cube (1x3x3)</b>: This is the 1x3x3 puzzle. Hold the puzzle horizontally, so that the top and bottom layers can be turned.</li>
+<li><b>FTO (Face-Turning Octahedron)</b>: This puzzle has 8 turnable axes - U across from D, F across from B, R across from BL, and L across from BR. You can also use these scrambles for the Master Skewb or Rex Cube, since the mechanisms are essentially the same.</li>
+<li><b>Gigaminx</b>: These scrambles are long, but they're more random than handscrambles. Use the same technique as the Pochmann scrambler for Megaminx.</li>
+<li>Helicopter Cube</b>: This is an edge-turning cube. Each move describes two 3x3 faces, and you should turn the edge between them by 180 degrees.</li>
+<li><b>Pyraminx Crystal</b>: Typical scrambler.<ul>
+ <li><b>Pochmann</b>: Same thing as the Pochmann-style Megaminx scrambler.</li>
+ <li><b>old style</b>: Gives each face a letter, like the 3x3x3 notation, and does random moves.</li></ul></li>
+<li><b>Siamese Cube</b>: Two scrambles are given, each for one half of the puzzle.<ul>
+ <li><b>1x1x3 block</b>: The traditional Siamese Cube; each one has U, E, R, and M free. A lowercase letter means a double layer turn.</li>
+ <li><b>1x2x3 block</b>: The new Siamese Cube; each one has U, R, and M free. A lowercase letter means a double layer turn.</li>
+ <li><b>2x2x2 block</b>: The "Fused Cube"; each one has U, R, and F free.</li></ul></li>
+<li><b>Skewb</b>: There are many ways to choose four faces, such as "fixed corner" where you keep the URF corner fixed; U, R, and L turn nearby corners, and B turns the opposite corner. Otherwise the notation is normal.</li>
+<li><b>Super Floppy Cube</b>: A shape-changing version of the Floppy Cube. Hold it the same way, but this time quarter turns are always possible.</li>
+<li><b>Super Square-1 (twist metric)</b>: (x,y,z,w) means to turn the top layer x stickers clockwise, the second-from-top layer y stickers clockwise, the second-from-bottom layer z stickers clockwise, and the bottom layer w stickers clockwise. / means to turn the right half of the puzzle by 180 degrees. Twist metric means that only the / moves are counted towards the scramble length.</li>
+<li><b>UFO</b>: As in the Jaap scrambler, A, B, and C are 180-degree turns along the three ways the puzzle is cut, and U is a rotation of the top layer. See <a href="http://geocities.com/jaapsch/scramble_ufo.htm">Jaap's scrambler</a> for the exact meanings of A, B, and C.</li>
+</ul>
+
+<h3>Specialty Scrambles:</h3>
+These scrambles are not single puzzles, but are instead designed for common unofficial or practice events, such as solving multiple cubes at once or solving only part of a cube.
+<ul>
+<li><b>1x1x1</b>: This gives you a random cube orientation. The x, y, and z moves are rotations about the R, U, and F faces, respectively.</li>
+<li><b>3x3x3 subsets</b>: These scramblers only affect various parts of the 3x3x3 cube, leaving other parts solved. Some of these should only be solved with the types of moves used in the scramble.<ul>
+ <li><b>2-generator &lt;R,U&gt;</b>: Scrambles part of a 3x3x3 by only turning the R and U layers.</li>
+ <li><b>Roux-generator &lt;M,U&gt;</b>: Scrambles part of a 3x3x3 by only turning the M and U layers.</li>
+ <li><b>3-generator &lt;F,R,U&gt;</b>: Scrambles part of a 3x3x3 by only turning the F, R, and U layers.</li>
+ <li><b>3-generator &lt;R,U,L&gt;</b>: Scrambles part of a 3x3x3 by only turning the R, U, and L layers.</li>
+ <li><b>3-generator &lt;R,r,U&gt;</b>: Scrambles part of a 3x3x3 by only turning the R, r, and U layers.</li>
+ <li><b>half turns only</b>: Scrambles the 3x3x3 using only half turns.</li>
+ <li><b>edges only</b>: Scrambles only the edges of the 3x3x3, keeping the corners solved. Uses Shuang Chen's solver.</li>
+ <li><b>corners only</b>: Scrambles only the corners of the 3x3x3, keeping the edges solved. Uses Shuang Chen's solver.</li>
+ <li><b>last layer</b>: Scrambles only the last layer of the 3x3x3, keeping the F2L solved. Uses Shuang Chen's solver.</li>
+ <li><b>last slot + last layer</b>: Scrambles the last layer of the 3x3x3 as well as one of the F2L slots, keeping the rest solved. Uses Shuang Chen's solver.</li>
+ <li><b>last slot + last layer (old)</b>: Uses random triggers to scramble the last layer of the 3x3x3 as well as one of the F2L slots, keeping the rest solved. This uses a lot more moves than the new style.</li></ul></li>
+<li><b>Bandaged Cube (Bicube)</b>: Scrambles the Bandaged Cube, which is tricky because most of the moves are blocked.</li>
+<li><b>Bandaged Square-1 &lt;/,(1,0)&gt;</b>: Scrambles part of a Square-1 by only doing / and (x,0) turns.</li>
+<li><b>Bigcube subsets</b>: These scramblers only affect various parts of bigger cubes, leaving other parts solved. Some of these should only be solved with the types of moves used in the scramble.<ul>
+ <li><b>&lt;R,r,U,u&gt;</b>: Scrambles the 4x4x4 or 5x5x5 using only the right two and top two layers.</li>
+ <li><b>4x4x4 edges</b>: Scrambles the edge and corner pieces of the 4x4x4, without messing up the centers.</li>
+ <li><b>5x5x5 edges</b>: Scrambles the edge and corner pieces of the 5x5x5, without messing up the centers.</li>
+ <li><b>6x6x6 edges</b>: Scrambles the edge and corner pieces of the 6x6x6, without messing up the centers.</li>
+ <li><b>7x7x7 edges</b>: Scrambles the edge and corner pieces of the 7x7x7, without messing up the centers.</li></ul></li>
+<li><b>Megaminx subsets</b>: These scramblers only affect various parts of bigger cubes, leaving other parts solved. Some of these should only be solved with the types of moves used in the scramble.<ul>
+ <li><b>2-generator &lt;R,U&gt;</b>: Scrambles part of the Megaminx using turns of only two faces.</li>
+ <li><b>last slot + last layer</b>: Scrambles the last layer plus one of the slots of the last "F2L", using random triggers.</li></ul></li>
+<li><b>Relays</b>: These scramblers are for several puzzles being solved all at once.<ul>
+ <li><b>lots of 3x3x3s</b>: Generates several 3x3x3 scrambles. Set the scramble length to the number of cubes you want.</li>
+ <li><b>234 relay</b>: Generates solves for a relay of 2x2x2 through 4x4x4 cubes.</li>
+ <li><b>2345 relay</b>: Generates solves for a relay of 2x2x2 through 5x5x5 cubes.</li>
+ <li><b>23456 relay</b>: Generates solves for a relay of 2x2x2 through 6x6x6 cubes.</li>
+ <li><b>234567 relay</b>: Generates solves for a relay of 2x2x2 through 7x7x7 cubes.</li></ul></li>
+
+</ul>
+<h3>Joke Scrambles:</h3>
+These scrambles are just for fun. I don't expect anyone to actually try to scramble puzzles with them.
+<ul>
+<li><b>-1x-1x-1 (micro style)</b>: Imitates a quirk of a scramble-bot I used to get scrambles from.</li>
+<li><b>1x1x2</b>: A solved cube is not lucky.</li>
+<li><b>3x3x3 for noobs</b>: In case someone doesn't understand notation.</li>
+<li><b>LOL</b>: Do you mean OLL?</li>
+<li><b>Derrick Eide</b>: Imitates a certain user on the speedsolving.com forums.</li>
+</ul>
+</body></html>
