@@ -75,7 +75,11 @@ function initialize(lookForTimes, checkQueryString) {
  timerStatus = 3;
 
  timerupdate = (a=getCookie("timerupdate"))===null ? 1 : a;
- $('toggler').innerHTML = (timerupdate==0) ? "off" : (timerupdate==1) ? "on" : "seconds only";
+ $('toggler').innerHTML =
+	(timerupdate==0) ? "off" :
+	(timerupdate==1) ? "on" :
+	(timerupdate==2) ? "seconds only" :
+	"inspection only";
  useMilli = (a=getCookie("useMilli"))===null ? 0 : a;
  $('millisec').innerHTML = (useMilli==1) ? "1\/1000 sec" : "1\/100 sec";
  var oldManualEnter = manualEnter;
@@ -195,19 +199,20 @@ function startTimer(keyCode) {
    timerStatus = 2;
    inspectionTime = new Date();
    $('theTime').style.color = "red";
-   inspectionID = setInterval(updateInspec, (timerupdate==1)?10:100);
+   if (timerupdate != 0) {inspectionID = setInterval(updateInspec, (timerupdate==1)?10:100);}
+   else {$('theTime').innerHTML = "inspecting";}
   } else if (useBld == 1) {
    timerStatus = 4;
    memoTime = new Date();
    $('theTime').style.color = $('memcol').value;
-   if (timerupdate > 0) {memoID = setInterval(updateMemo, (timerupdate==1)?10:100);}
+   if (timerupdate==1 || timerupdate==2) {memoID = setInterval(updateMemo, (timerupdate==1)?10:100);}
    else {$('theTime').innerHTML = "memorizing";}
   } else {
    timerStatus = 1;
    startTime = new Date();
    penalty = 0;
    $('theTime').style.color = $('fcol').value;
-   if (timerupdate > 0) {timerID = setInterval(updateTimer, (timerupdate==1)?10:100);}
+   if (timerupdate==1 || timerupdate==2) {timerID = setInterval(updateTimer, (timerupdate==1)?10:100);}
    else {$('theTime').innerHTML = "running";}
   }
  } else if (timerStatus == 4 && keyCode == 32) {
@@ -215,7 +220,7 @@ function startTimer(keyCode) {
   startTime = new Date();
   $('theTime').style.color = $('fcol').value;
   var memoLength = startTime.getTime() - memoTime.getTime();
-  if (timerupdate > 0) {
+  if (timerupdate==1 || timerupdate==2) {
    clearInterval(memoID);
    timerID = setInterval(updateMemo, (timerupdate==1)?10:100);
   }
@@ -227,7 +232,7 @@ function startTimer(keyCode) {
   var inspecLength = startTime.getTime() - inspectionTime.getTime();
   penalty = (inspecLength < 15000) ? 0 : (inspecLength < 17000) ? 2 : 1;
   clearInterval(inspectionID);
-  if (timerupdate > 0) {
+  if (timerupdate==1 || timerupdate==2) {
    timerID = setInterval(updateTimer, (timerupdate==1)?10:100);
   }
   else {$('theTime').innerHTML = "running";}
@@ -258,7 +263,7 @@ function stopTimer(keyCode) {
   }
  } else if(timerStatus == 1) {
   timerStatus = (keyCode == 32) ? 0 : 3;
-  if (timerupdate > 0) {clearInterval(timerID);}
+  if (timerupdate==1 || timerupdate==2) {clearInterval(timerID);}
   getTime(penalty);
   scrambleArr[scrambleArr.length] = scramble;
   rescramble3();
@@ -317,7 +322,7 @@ function getTime(note) {
  $('theTime').innerHTML = pretty(time);
  clearHighlight();
  loadList();
- getStats(false);
+ getStats(true); // should be false, but it doesn't hurt
 }
 
 function parseTime(s, importing) {
@@ -472,9 +477,13 @@ function toggleImport() {
 
 function toggleTimer() {
  stopTimer();
- timerupdate = (timerupdate + 1)%3;
+ timerupdate = (timerupdate + 1)%4;
  setCookie("timerupdate", timerupdate);
- $('toggler').innerHTML = (timerupdate==0) ? "off" : (timerupdate==1) ? "on" : "seconds only";
+ $('toggler').innerHTML =
+	(timerupdate==0) ? "off" :
+	(timerupdate==1) ? "on" :
+	(timerupdate==2) ? "seconds only" :
+	"inspection only";
 }
 
 function toggleMilli() {
@@ -1209,7 +1218,8 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["3x3x3 subsets",[["2-generator <R,U>","2gen",25],["2-generator <L,U>","2genl",25],
   ["Roux-generator <M,U>","roux",25],["3-generator <F,R,U>","3gen_F",25],["3-generator <R,U,L>","3gen_L",25],
   ["3-generator <R,r,U>","RrU",25],["half turns only","half",25],["edges only","edges",0],
-  ["corners only","corners",0],["last layer","ll",0],["last slot + last layer","lsll2",0],
+  ["corners only","corners",0],["last layer","ll",0],["CMLL+LSE","cmll",0],
+  ["last slot + last layer","lsll2",0],["ZBLL","zbll",0],["2GLL","2gll",0],["PLL","pll",0],
   ["last slot + last layer (old)","lsll",15]]],
  ["Bandaged Cube (Bicube)",[["","bic",30]]],
  ["Bandaged Square-1 </,(1,0)>",[["twist metric","bsq",25]]],
@@ -1253,7 +1263,7 @@ function scrambleIt(){
  }
  else if(type=="sqrs"){	          	// square-1 (random state)
   if (initoncesq1==1) { scramblers['sq1'].initialize(null, Math); initoncesq1=0; }
-  ss[0]=scramblers["sq1"].getRandomScramble().scramble;
+  ss[0]=scramblers["sq1"].getRandomScramble().scramble_string;
  }
  else if(type=="334"){			// 3x3x4
   megascramble([[["U","U'","U2", "u", "u'", "u2", "U u", "U u'", "U u2", "U' u", "U' u'", "U' u2", "U2 u", "U2 u'", "U2 u2"]],[["R2","L2","M2"]],[["F2","B2","S2"]]],[""]);
@@ -1553,6 +1563,18 @@ function scrambleIt(){
  }
  else if(type=="ll"){			// 3x3x3 last layer
   ss[0] = scramblers["333"].getLLScramble();
+ }
+ else if(type=="cmll"){			// 3x3x3 cmll
+  ss[0] = rndEl(["","M ","M2 ","M' "]) + scramblers["333"].getCMLLScramble();
+ }
+ else if(type=="zbll"){			// 3x3x3 zbll
+  ss[0] = scramblers["333"].getZBLLScramble();
+ }
+ else if(type=="2gll"){			// 3x3x3 2gll
+  ss[0] = scramblers["333"].get2GLLScramble();
+ }
+ else if(type=="pll"){			// 3x3x3 pll
+  ss[0] = scramblers["333"].getPLLScramble();
  }
  else if(type=="lsll2"){		// 3x3x3 last slot + last layer
   ss[0] = scramblers["333"].getLSLLScramble();

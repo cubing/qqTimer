@@ -1680,118 +1680,98 @@ function drawSquare(r, cx, cy, w, fillColor) {
   var rn = function(n) {
    return Math.floor(randomSource.random() * n);
   }
+  var permConvert = function(arr) {
+   // arr contains array e.g. [0,1,2,4,3]
+   var deltaArr = [];
+   for (var i=1; i<arr.length; i++) {
+    var offset = 0;
+	for (var j=0; j<i; j++) {
+	 if (arr[j] > arr[i]) offset++;
+	}
+    deltaArr.push(offset);
+   }
+   var result = 0;
+   for (var i=arr.length-1; i>0; i--) {
+    result = i * (deltaArr[i-1] + result);
+   }
+   return result;
+  }
+  var randomizeArr = function(arr, pos) {
+   // randomize elements of arr at positions pos
+   var newarr = [];
+   for (var i=0; i<pos.length; i++) {
+    newarr.push(arr[pos[i]]);
+   }
+   for (var i=0; i<newarr.length; i++) {
+    var rnd = i + rn(newarr.length - i);
+    if (rnd > i) {
+     var tmp = newarr[rnd];
+     newarr[rnd] = newarr[i];
+     newarr[i] = tmp;
+    }
+   }
+   for (var i=0; i<pos.length; i++) {
+    arr[pos[i]] = newarr[i];
+   }
+   return arr;
+  }
+  var customScramble = function(cp, ep, co, eo) {
+    var cperm, eperm, cori, csum, eori, esum;
+    do {
+	  eperm = permConvert(randomizeArr([0,1,2,3,4,5,6,7,8,9,10,11],ep));
+      cperm = permConvert(randomizeArr([0,1,2,3,4,5,6,7],cp));
+    } while ((get8Parity(cperm) ^ get12Parity(eperm)) != 0);
+    do {
+      csum = 0;
+      cori = 0;
+      for (var i=0; i<co.length; i++) {
+        var j = rn(3);
+        csum += j;
+        cori += j * Math.pow(3,co[i]);
+      }
+    } while (csum%3 != 0);
+    do {
+      esum = 0;
+      eori = 0;
+      for (var i=0; i<eo.length; i++) {
+        var j = rn(2);
+        esum += j;
+        eori += j * Math.pow(2,eo[i]);
+      }
+    } while (esum%2 != 0);
+    var posit = toFaceCube(new CubieCube_2(cperm, cori%2187, eperm, eori%2048));
+    return $solution(search, posit);
+  }
+   
+   
+  
 
   var getRandomScramble = function() {
-    var cperm, eperm;
-    do {
-      eperm = rn(479001600);
-      cperm = rn(40320);
-    } while ((get8Parity(cperm) ^ get12Parity(eperm)) != 0);
-    var posit = toFaceCube(new CubieCube_2(cperm, rn(2187), eperm, rn(2048)));
-    return $solution(search, posit);
+	return customScramble([0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7,8,9,10,11],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7,8,9,10,11]);
   }
-
   var getEdgeScramble = function() {
-    var eperm;
-    do {
-      eperm = rn(479001600);
-    } while ((get8Parity(0) ^ get12Parity(eperm)) != 0);
-    var posit = toFaceCube(new CubieCube_2(0, 0, eperm, rn(2048)));
-    return $solution(search, posit);
+    return customScramble([],[0,1,2,3,4,5,6,7,8,9,10,11],[],[0,1,2,3,4,5,6,7,8,9,10,11]);
   }
-
   var getCornerScramble = function() {
-    var cperm;
-    do {
-      cperm = rn(40320);
-    } while ((get8Parity(cperm) ^ get12Parity(0)) != 0);
-    var posit = toFaceCube(new CubieCube_2(cperm, rn(2187), 0, 0));
-    return $solution(search, posit);
+    return customScramble([0,1,2,3,4,5,6,7],[],[0,1,2,3,4,5,6,7],[]);
   }
-
   var getLLScramble = function() {
-    var cperm, eperm, cori, csum, eori, esum;
-    do {
-      eperm = 362880*(rn(2)+10*(rn(3)+11*rn(4)));
-      cperm = 120*(rn(2)+6*(rn(3)+7*rn(4)));
-    } while ((get8Parity(cperm) ^ get12Parity(eperm)) != 0);
-    var cpow = [729,243,81,27];
-    do {
-      csum = 0;
-      cori = 0;
-      for (var i=0; i<4; i++) {
-        var j = rn(3);
-        csum += j;
-        cori += j * cpow[i];
-      }
-    } while (csum%3 != 0);
-    var epow = [8,4,2,1];
-    do {
-      esum = 0;
-      eori = 0;
-      for (var i=0; i<4; i++) {
-        var j = rn(2);
-        esum += j;
-        eori += j * epow[i];
-      }
-    } while (esum%2 != 0);
-    var posit = toFaceCube(new CubieCube_2(cperm, cori, eperm, eori));
-    return $solution(search, posit);
+	return customScramble([4,5,6,7],[8,9,10,11],[3,4,5,6],[0,1,2,3]);
   }
-
+  var getCMLLScramble = function() {
+	return customScramble([4,5,6,7],[4,6,8,9,10,11],[3,4,5,6],[0,1,2,3,5,7]);
+  }
   var getLSLLScramble = function() {
-    var cperm, eperm, cori, csum, eori, esum;
-    do {
-      var edest = rn(5);
-      //0 + 2*(0 + 3*(0 + 4*(1 + 5*(1 + 6*(1 + 7*(1 + 8*(rn(2) + 9*(6 + 10*(rn(3) + 11*rn(4))))))))));
-      switch (edest) {
-      case 0:
-        eperm = 362880*(rn(2)+10*(rn(3)+11*rn(4))); break;
-      case 1:
-        eperm = 5904 + 40320*(5 + 9*(rn(2) + 10*(rn(3) + 11*rn(4)))); break;
-      case 2:
-        eperm = 5904 + 40320*(rn(2) + 9*(6 + 10*(rn(3) + 11*rn(4)))); break;
-      case 3:
-        eperm = 5904 + 40320*(rn(2) + 9*(rn(3) + 10*(7 + 11*rn(4)))); break;
-      default:
-        eperm = 5904 + 40320*(rn(2) + 9*(rn(3) + 10*(rn(4) + 11*8))); break;
-      }
-      var cdest = rn(5);
-      switch (cdest) {
-      case 0:
-        cperm = 120*(rn(2)+6*(rn(3)+7*rn(4))); break;
-      case 1:
-        cperm = 24*(1 + 5*(rn(2) + 6*(rn(3) + 7*rn(4)))); break;
-      case 2:
-        cperm = 24*(rn(2) + 5*(2 + 6*(rn(3) + 7*rn(4)))); break;
-      case 3:
-        cperm = 24*(rn(2) + 5*(rn(3) + 6*(3 + 7*rn(4)))); break;
-      default:
-        cperm = 24*(rn(2) + 5*(rn(3) + 6*(rn(4) + 7*4))); break;
-      }
-    } while ((get8Parity(cperm) ^ get12Parity(eperm)) != 0);
-    var cpow = [729,243,81,27,9];
-    do {
-      csum = 0;
-      cori = 0;
-      for (var i=0; i<5; i++) {
-        var j = rn(3);
-        csum += j;
-        cori += j * cpow[i];
-      }
-    } while (csum%3 != 0);
-    var epow = [256,8,4,2,1];
-    do {
-      esum = 0;
-      eori = 0;
-      for (var i=0; i<5; i++) {
-        var j = rn(2);
-        esum += j;
-        eori += j * epow[i];
-      }
-    } while (esum%2 != 0);
-    var posit = toFaceCube(new CubieCube_2(cperm, cori, eperm, eori));
-    return $solution(search, posit);
+	return customScramble([3,4,5,6,7],[3,8,9,10,11],[2,3,4,5,6],[0,1,2,3,8]);
+  }
+  var getZBLLScramble = function() {
+	return customScramble([4,5,6,7],[8,9,10,11],[3,4,5,6],[]);
+  }
+  var get2GLLScramble = function() {
+	return customScramble([],[8,9,10,11],[3,4,5,6],[]);
+  }
+  var getPLLScramble = function() {
+	return customScramble([4,5,6,7],[8,9,10,11],[],[]);
   }
 
   return {
@@ -1806,7 +1786,11 @@ function drawSquare(r, cx, cy, w, fillColor) {
     getEdgeScramble: getEdgeScramble,
     getCornerScramble: getCornerScramble,
     getLLScramble: getLLScramble,
-    getLSLLScramble: getLSLLScramble
+	getCMLLScramble: getCMLLScramble,
+    getLSLLScramble: getLSLLScramble,
+	getZBLLScramble: getZBLLScramble,
+	get2GLLScramble: get2GLLScramble,
+	getPLLScramble: getPLLScramble
   };
 
 })();
