@@ -27,6 +27,7 @@ var highlightStop;
 var highlightID;
 var sessionID=0;
 var initoncesq1 = 1;
+var nightMode = false;
 
 function $(str){return document.getElementById(str);}
 
@@ -211,14 +212,14 @@ function startTimer(keyCode) {
    timerStatus = 1;
    startTime = new Date();
    penalty = 0;
-   $('theTime').style.color = $('fcol').value;
+   $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
    if (timerupdate==1 || timerupdate==2) {timerID = setInterval(updateTimer, (timerupdate==1)?10:100);}
    else {$('theTime').innerHTML = "running";}
   }
  } else if (timerStatus == 4 && keyCode == 32) {
   timerStatus = 1;
   startTime = new Date();
-  $('theTime').style.color = $('fcol').value;
+  $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
   var memoLength = startTime.getTime() - memoTime.getTime();
   if (timerupdate==1 || timerupdate==2) {
    clearInterval(memoID);
@@ -228,7 +229,7 @@ function startTimer(keyCode) {
  } else if (timerStatus == 2 && keyCode == 32) {
   timerStatus = 1;
   startTime = new Date();
-  $('theTime').style.color = $('fcol').value;
+  $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
   var inspecLength = startTime.getTime() - inspectionTime.getTime();
   penalty = (inspecLength < 15000) ? 0 : (inspecLength < 17000) ? 2 : 1;
   clearInterval(inspectionID);
@@ -247,18 +248,20 @@ function stopTimer(keyCode) {
  if (manualEnter == 1) {
   if (keyCode == 13) {
    var timeStr = $('timeEntry').value;
+   var nonzero = false;
    if (timeStr.match(/.* .*/)) {
-    if (parseTime(timeStr.replace(/(.*) .*/, "$1"))) { // if time breaks, ignore comments/notes
+    nonzero = parseTime(timeStr.replace(/(.*) .*/, "$1"), true);
+    if (nonzero) { // if time breaks, ignore comments/notes
      comments[times.length-1] = timeStr.replace(/.*? (.*)$/, "$1");
      notes[times.length-1] = 0;
      loadList(); // unfortunately have to do this twice ;|
      getStats(false);
     }
    } else {
-    parseTime(timeStr);
+    nonzero = parseTime(timeStr, false);
    }
    $('timeEntry').value = "";
-   scrambleArr[scrambleArr.length] = scramble;
+   if (nonzero) scrambleArr[scrambleArr.length] = scramble;
    rescramble3();
   }
  } else if(timerStatus == 1) {
@@ -584,8 +587,13 @@ function toggleStatView() {
 
 function changeColor() {
  $('menu').bgColor = parseColor($('tcol').value);
- document.bgColor = parseColor($('bcol').value);
- document.body.style.color = parseColor($('fcol').value);
+ if (nightMode) {
+  document.bgColor = "#000";
+  document.body.style.color = "#fff";
+ } else {
+  document.bgColor = parseColor($('bcol').value);
+  document.body.style.color = parseColor($('fcol').value);
+ }
 
  if (getBrowser() != "IE") {
   var links = document.getElementsByClassName('a');
@@ -631,8 +639,23 @@ function resetColors() {
  changeColor();
 }
 
+function toggleNightMode() {
+ nightMode = !nightMode;
+ if (nightMode) {
+  document.bgColor = "#000";
+  document.body.style.color = "#fff";
+ } else {
+  document.bgColor = parseColor($('bcol').value);
+  document.body.style.color = parseColor($('fcol').value);
+ }
+}
+
 /* setCookie and getCookie functions originally from http://www.quirksmode.org/js/cookies.html */
 function setCookie(name,value) {
+ if (window.localStorage !== undefined) {
+  window.localStorage.setItem(name,value);
+  return;
+ }
  var expires = "; expires=" + new Date(3000, 00, 01).toGMTString() + "; path=/";
  var cookies = document.cookie.split(';');
  var x = "qqTimer=";
@@ -668,6 +691,11 @@ function setCookie(name,value) {
 }
 
 function getCookie(name) {
+ if (window.localStorage !== undefined) {
+  var value = window.localStorage.getItem(name);
+  if (value != null) return value;
+ }
+ 
  var cookies = document.cookie.split(';');
  var x = "qqTimer=";
  for (var i=0; i<cookies.length; i++) {
@@ -687,14 +715,31 @@ function getCookie(name) {
 }
 
 function saveSession() {
+ var id = (document.getElementById("sessbox").selectedIndex==null) ? 0 : document.getElementById("sessbox").selectedIndex;
+ var name = "session"+id;
+
+ if (window.localStorage !== undefined) {
+  var value = "";
+  for (var i=0; i<times.length; i++) {
+   value+=times[i];
+   if(comments[i]!="" && comments[i]!==null) { value+="|" + comments[i]; } 
+   if(notes[i]==1) value+="-";
+   if(notes[i]==2) value+="+";
+   if (i<times.length-1) value+=",";
+  }
+  value += ">";
+ 
+  window.localStorage.setItem(name,value);
+  return;
+ }
+ 
  // format: cookie name "sessionY|X", comma separated, ">" at end
  // X is a number and we use another one if we run out of space
  // Y is the session number
  // time (in ms) with + for +2 or - for DNF
- var id = (document.getElementById("sessbox").selectedIndex==null) ? 0 : document.getElementById("sessbox").selectedIndex;
  var expires = "; expires=" + new Date(3000, 00, 01).toGMTString() + "; path=/";
  var cnt = 1;
- var s = "session"+id+"|"+cnt+"=";
+ var s = name+"|"+cnt+"=";
  for (var i=0; i<times.length; i++) {
   if (s.length < 3950) { // just in case!
    s+=times[i];
@@ -705,7 +750,7 @@ function saveSession() {
   } else {
    document.cookie = s + expires;
    cnt++;
-   s = "session"+id+"|"+cnt+"=";
+   s = name+"|"+cnt+"=";
    i--;
   }
  }
@@ -718,30 +763,41 @@ function getSession() {
  notes = [];
  comments = [];
  scrambleArr = [];
- var cookies = document.cookie.split(';');
- var cnt = 1;
- var x = "session"+id+"|"+cnt+"=";
- var s = "";
- var found = true;
- while (found) {
-  found = false;
-  for (var i=0; i<cookies.length; i++) {
-   var c = cookies[i];
-   while (c.charAt(0)==' ') c = c.substring(1, c.length);
-   if (c.indexOf(x) == 0) { // the right cookie
-    s += c.substring(x.length, c.length);
-    if (s.indexOf(">") == -1) {
-     found = true; cnt++; x = "session"+id+"|"+cnt+"="; break;
+ 
+ var s = null;
+ if (window.localStorage !== undefined) { // try to load text from localStorage
+  s = window.localStorage.getItem("session"+id);
+ }
+ 
+ if (s == null) { // not in localStorage, load from cookie
+  s = "";
+  var cookies = document.cookie.split(';');
+  var cnt = 1;
+  var x = "session"+id+"|"+cnt+"=";
+  var found = true;
+  while (found) {
+   found = false;
+   for (var i=0; i<cookies.length; i++) {
+    var c = cookies[i];
+    while (c.charAt(0)==' ') c = c.substring(1, c.length);
+    if (c.indexOf(x) == 0) { // the right cookie
+     s += c.substring(x.length, c.length);
+     if (s.indexOf(">") == -1) {
+      found = true; cnt++; x = "session"+id+"|"+cnt+"="; break;
+     }
     }
    }
   }
  }
 
- if (s.length == 0) return;
+ if (s == null) {
+  return;
+ } else if (s.length == 0) {
+  return;
+ }
 
  var t = s.split(",");
  if (t[0] != ">") {
-   scrambleArr = [];
    for (var j=0; j<t.length; j++) {
     
     if (t[j].slice(-1) == ">") { t[j] = t[j].slice(0,t[j].length-1); }
@@ -1182,9 +1238,10 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["5x5x5",[["SiGN","555",60],["WCA","555wca",60]]],
  ["6x6x6",[["SiGN","666si",80],["prefix","666p",80],["suffix","666s",80]]],
  ["7x7x7",[["SiGN","777si",100],["prefix","777p",100],["suffix","777s",100]]],
- ["Clock",[["Jaap order","clk",0],["concise","clkc",0],["efficient pin order","clke",0]]],
+ ["Clock",[["Jaap order","clk",0],["concise","clkc",0],["efficient pin order","clke",0],["WCA","clkwca",0]]],
  ["Megaminx",[["Pochmann","mgmp",70],["old style","mgmo",70]]],
  ["Pyraminx",[["random state","pyrso",11],["optimal random state","pyro",0],["random moves","pyrm",25]]],
+ ["Skewb",[["U L R B","skb",25]]],
  ["Square-1",[["face turn metric","sq1h",40],["twist metric","sq1t",20],["random state","sqrs",0]]],
  ["===OTHER PUZZLES===",[["--","blank",0]]],
  ["15 puzzle",[["piece moves","15p",80],["blank moves","15pm",80]]],
@@ -1194,8 +1251,10 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["3x3x5",[["shapeshifting","335",25]]],
  ["3x3x6",[[" ","336",40]]],
  ["3x3x7",[["shapeshifting","337",40]]],
+ ["4x4x6",[[" ","446",40]]],
  ["8x8x8",[["SiGN","888",120]]],
  ["9x9x9",[["SiGN","999",120]]],
+ ["10x10x10",[["SiGN","101010",120]]],
  ["11x11x11",[["SiGN","111111",120]]],
  ["Cmetrick",[[" ","cm3",25]]],
  ["Cmetrick Mini",[[" ","cm2",25]]],
@@ -1208,7 +1267,6 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["Siamese Cube (1x1x3 block)",[[" ","sia113",25]]],
  ["Siamese Cube (1x2x3 block)",[[" ","sia123",25]]],
  ["Siamese Cube (2x2x2 block)",[[" ","sia222",25]]],
- ["Skewb",[["U L R B","skb",25]]],
  ["Square-2",[[" ","sq2",20]]],
  ["Super Floppy Cube",[[" ","sfl",25]]],
  ["Super Square-1",[["twist metric","ssq1t",20]]],
@@ -1219,7 +1277,7 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
   ["Roux-generator <M,U>","roux",25],["3-generator <F,R,U>","3gen_F",25],["3-generator <R,U,L>","3gen_L",25],
   ["3-generator <R,r,U>","RrU",25],["half turns only","half",25],["edges only","edges",0],
   ["corners only","corners",0],["last layer","ll",0],["CMLL+LSE","cmll",0],
-  ["last slot + last layer","lsll2",0],["ZBLL","zbll",0],["2GLL","2gll",0],["PLL","pll",0],
+  ["last slot + last layer","lsll2",0],["ZBLL","zbll",0],["2GLL","2gll",0],["PLL","pll",0],["ZZ last slot + last layer","zzls",0],
   ["last slot + last layer (old)","lsll",15]]],
  ["Bandaged Cube (Bicube)",[["","bic",30]]],
  ["Bandaged Square-1 </,(1,0)>",[["twist metric","bsq",25]]],
@@ -1283,11 +1341,20 @@ function scrambleIt(){
   for(n=0;n<num;n++){ss[n]+=" / ";}
   ss[0] += scramblers["333"].getRandomScramble();
  }
+ else if(type=="446"){			// 4x4x6
+  var n;
+  megascramble([[["U","U'","U2"], ["D", "D'", "D2"]],["R2","r2","L2"],["F2","f2","B2"]],[""]);
+  for(n=0;n<num;n++){ss[n]+=" / ";}
+  megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);
+ }
  else if(type=="888"){			// 8x8x8 (SiGN)
   megascramble([["U","D","u","d","3u","3d","4u"],["R","L","r","l","3r","3l","4r"],["F","B","f","b","3f","3b","4f"]],cubesuff);
  }
  else if(type=="999"){			// 9x9x9 (SiGN)
   megascramble([["U","D","u","d","3u","3d","4u","4d"],["R","L","r","l","3r","3l","4r","4l"],["F","B","f","b","3f","3b","4f","4b"]],cubesuff);
+ }
+ else if(type=="101010"){		// 10x10x10 (SiGN)
+  megascramble([["U","D","u","d","3u","3d","4u","4d","5u"],["R","L","r","l","3r","3l","4r","4l","5r"],["F","B","f","b","3f","3b","4f","4b","5f"]],cubesuff);
  }
  else if(type=="111111"){		// 11x11x11 (SiGN)
   megascramble([["U","D","u","d","3u","3d","4u","4d","5u","5d"],["R","L","r","l","3r","3l","4r","4l","5r","5l"],["F","B","f","b","3f","3b","4f","4b","5f","5b"]],cubesuff);
@@ -1351,6 +1418,22 @@ function scrambleIt(){
    ss[n]="<tt><b><br>&nbsp;UU"+c("u")+"dU"+c("u")+"dU"+c("u")+"UU"+c("u")+"UU"+c("u")+"UU"+c("u")+"Ud"+c("u")+"Ud";
    ss[n]+=c("u")+"dd"+c("u")+"dd"+c3()+c2()+"<br>&nbsp;UU"+c3()+"UU"+c3()+"dU"+c("d")+"dU"+c3()+"dd";
    ss[n]+=c("d")+"Ud"+c3()+"Ud"+c("d")+"UU"+c3()+"UU"+c("d")+"dd"+c("d")+c2()+"</b></tt><br>";
+  }
+ }
+ else if(type=="clkwca"){		// Clock (WCA) - scrambler by DrKorbin
+  for(var n=0;n<num;n++){
+   var clock_rotations=["0+", "1+", "2+", "3+", "4+", "5+", "6+", "5-", "4-", "3-", "2-", "1-"];
+   var pins=["UR", "DR", "DL", "UL", "U", "R", "D", "L", "ALL", "U", "R", "D", "L", "ALL"];
+   var final_pins=["UR", "DR", "DL", "UL"];
+   ss[n]="<tt><b><br>";
+   for(var i=0;i<14;i++){
+    ss[n]+=pins[i]+rndEl(clock_rotations)+"&nbsp;";
+    if(i==8) ss[n]+="y2&nbsp;";
+   }
+   for(var i=0;i<4;i++){
+    ss[n]+=rndEl([final_pins[i]+"&nbsp;", ""])
+   }
+   ss[n]+="</b></tt><br>";
   }
  }
  else if(type=="cm3"){			// Cmetrick
@@ -1578,6 +1661,9 @@ function scrambleIt(){
  }
  else if(type=="lsll2"){		// 3x3x3 last slot + last layer
   ss[0] = scramblers["333"].getLSLLScramble();
+ }
+ else if(type=="zzls"){			// 3x3x3 ZZ last slot + last layer
+  ss[0] = scramblers["333"].getZZLSScramble();
  }
  else if(type=="lsll"){			// 3x3x3 last slot + last layer (old)
   megascramble([[["R U R'","R U2 R'","R U' R'"]],[["F' U F","F' U2 F","F' U' F"]],[["U","U2","U'"]]],[""]);
@@ -2111,6 +2197,7 @@ function megascramble(turns, suffixes){
     highlight color: #<input id="hcol" value="yellow" size="6" maxlength="6" onchange="changeColor()"><br>
     memorization colour: #<input id="memcol" value="green" size="6" maxlength="6" onchange="changeColor()"><br>
     <span class="a" onclick="resetColors()">reset</span> colors to default<br>
+	<span class="a" onclick="toggleNightMode()">toggle</span> night mode<br>
    </td></tr></tbody></table>
   </td></tr>
   <tr id="avgdata" style="display: none; ">
