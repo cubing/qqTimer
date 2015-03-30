@@ -1241,7 +1241,7 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["Clock",[["Jaap order","clk",0],["concise","clkc",0],["efficient pin order","clke",0],["WCA","clkwca",0]]],
  ["Megaminx",[["Pochmann","mgmp",70],["old style","mgmo",70]]],
  ["Pyraminx",[["random state","pyrso",11],["optimal random state","pyro",0],["random moves","pyrm",25]]],
- ["Skewb",[["U L R B","skb",25]]],
+ ["Skewb",[["random state","skbso",11],["optimal random state","skbo",0],["U L R B","skb",25]]],
  ["Square-1",[["face turn metric","sq1h",40],["twist metric","sq1t",20],["random state","sqrs",0]]],
  ["===OTHER PUZZLES===",[["--","blank",0]]],
  ["15 puzzle",[["piece moves","15p",80],["blank moves","15pm",80]]],
@@ -1284,7 +1284,7 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["Bigcube subsets",[["<R,r,U,u>","RrUu",40],["4x4x4 edges","4edge",8],["5x5x5 edges","5edge",8],
   ["6x6x6 edges","6edge",8],["7x7x7 edges","7edge",8]]],
  ["Megaminx subsets",[["2-generator <R,U>","minx2g",30],["last slot + last layer","mlsll",20]]],
- ["Relays",[["lots of 3x3x3s","r3",5],["234 relay","r234",0],["2345 relay","r2345",0],["23456 relay","r23456",0],["234567 relay","r234567",0]]],
+ ["Relays",[["lots of 3x3x3s","r3",5],["234 relay","r234",0],["2345 relay","r2345",0],["23456 relay","r23456",0],["234567 relay","r234567",0],["Guildford Challenge","guildford",0],["Mini Guildford Challenge","miniguild",0]]],
  ["===JOKE SCRAMBLES===",[["--","blank",0]]],
  ["-1x-1x-1 (micro style)",[[" ","-1",25]]],
  ["1x1x2",[[" ","112",25]]],
@@ -1543,6 +1543,66 @@ function scrambleIt(){
   len = 100;
   megascramble([["U","D","2U","2D","3U","3D"],["R","L","2R","2L","3R","3L"],["F","B","2F","2B","3F","3B"]],cubesuff);
  }
+ else if(type=="guildford"){		// Guildford Challenge
+  ss[0] += "<br> 2x2x2) ";
+  get2x2optscramble(9);
+  ss[0] += "<br> 3x3x3) ";
+  ss[0] += scramblers["333"].getRandomScramble();
+  ss[0] += "<br> 4x4x4) ";
+  len = 40;
+  megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);
+  ss[0] += "<br> 5x5x5) ";
+  len = 60;
+  megascramble([["U","D","u","d"],["R","L","r","l"],["F","B","f","b"]],cubesuff);
+  ss[0] += "<br> 6x6x6) ";
+  len = 80;
+  megascramble([["U","D","2U","2D","3U"],["R","L","2R","2L","3R"],["F","B","2F","2B","3F"]],cubesuff);
+  ss[0] += "<br> 7x7x7) ";
+  len = 100;
+  megascramble([["U","D","2U","2D","3U","3D"],["R","L","2R","2L","3R","3L"],["F","B","2F","2B","3F","3B"]],cubesuff);
+  ss[0] += "<br> 3OH) ";
+  ss[0] += scramblers["333"].getRandomScramble();
+  ss[0] += "<br> 3FT) ";
+  ss[0] += scramblers["333"].getRandomScramble();
+  ss[0] += "<br> Pyra) ";
+  getpyraoptscramble(8);
+  ss[0] += "<br> Square-1) ";
+  sq1_scramble(1);
+  ss[0] += "<br> Skewb) ";
+  getskewboptscramble(8);
+  ss[0] += "<br> Clock) ";
+  for (var i=0;i<4;i++) ss[0]+="(" + (Math.floor(Math.random()*12)-5) + ", " + (Math.floor(Math.random()*12)-5) + ") / ";
+  for (var i=0;i<6;i++) ss[0]+="(" + (Math.floor(Math.random()*12)-5) + ") / ";
+  for (var i=0;i<4;i++) ss[0]+=rndEl(["d","U"]);
+  ss[0] += "<br> Mega) ";
+  pochscramble(10,Math.ceil(len/10));
+ }
+ else if (type=="miniguild") {		// Mini Guildford Challenge
+  ss[0] += "<br> 2x2x2) ";
+  get2x2optscramble(9);
+  ss[0] += "<br> 3x3x3) ";
+  ss[0] += scramblers["333"].getRandomScramble();
+  ss[0] += "<br> 4x4x4) ";
+  len = 40;
+  megascramble([["U","D","u"],["R","L","r"],["F","B","f"]],cubesuff);
+  ss[0] += "<br> 5x5x5) ";
+  len = 60;
+  megascramble([["U","D","u","d"],["R","L","r","l"],["F","B","f","b"]],cubesuff);
+  ss[0] += "<br> 3OH) ";
+  ss[0] += scramblers["333"].getRandomScramble();
+  ss[0] += "<br> Pyra) ";
+  getpyraoptscramble(8);
+  ss[0] += "<br> Square-1) ";
+  sq1_scramble(1);
+  ss[0] += "<br> Skewb) ";
+  getskewboptscramble(8);
+  ss[0] += "<br> Clock) ";
+  for (var i=0;i<4;i++) ss[0]+="(" + (Math.floor(Math.random()*12)-5) + ", " + (Math.floor(Math.random()*12)-5) + ") / ";
+  for (var i=0;i<6;i++) ss[0]+="(" + (Math.floor(Math.random()*12)-5) + ") / ";
+  for (var i=0;i<4;i++) ss[0]+=rndEl(["d","U"]);
+  ss[0] += "<br> Mega) ";
+  pochscramble(10,Math.ceil(len/10));
+ }
  else if(type=="r3"){			// multiple 3x3x3 relay
   var ncubes = len;
   len = 25;
@@ -1572,6 +1632,12 @@ function scrambleIt(){
  }
  else if(type=="skb"){			// Skewb
   megascramble([["R"],["L"],["B"],["U"]],["","'"]);
+ }
+ else if(type=="skbo"){			// Skewb (optimal random state)
+  getskewboptscramble(0);
+ }
+ else if(type=="skbso"){		// Skewb (suboptimal random state)
+  getskewboptscramble(8);
  }
  else if(type=="sq1h"){			// Square-1 (turn metric)
   sq1_scramble(1);
@@ -2087,6 +2153,12 @@ function getpyraoptscramble(mn) {
  var j=1,b=[],g=[],f=[],d=[],e=[],k=[],h=[],i=[];function u(){var c,p,q,l,m;for(p=0;p<720;p++){g[p]=-1;d[p]=[];for(m=0;m<4;m++)d[p][m]=w(p,m)}g[0]=0;for(l=0;l<=6;l++)for(p=0;p<720;p++)if(g[p]==l)for(m=0;m<4;m++){q=p;for(c=0;c<2;c++){q=d[q][m];if(g[q]==-1)g[q]=l+1}}for(p=0;p<2592;p++){f[p]=-1;e[p]=[];for(m=0;m<4;m++)e[p][m]=x(p,m)}f[0]=0;for(l=0;l<=5;l++)for(p=0;p<2592;p++)if(f[p]==l)for(m=0;m<4;m++){q=p;for(c=0;c<2;c++){q=e[q][m];if(f[q]==-1)f[q]=l+1}}for(c=0;c<j;c++){k=[];var t=0,s=0;q=0;h=[0,1,2,3,4,5];for(m=0;m<4;m++){p=m+n(6-m);l=h[m];h[m]=h[p];h[p]=l;if(m!=p)s++}if(s%2==1){l=h[4];h[4]=h[5];h[5]=l}s=0;i=[];for(m=0;m<5;m++){i[m]=n(2);s+=i[m]}i[5]=s%2;for(m=6;m<10;m++){i[m]=n(3)}for(m=0;m<6;m++){l=0;for(p=0;p<6;p++){if(h[p]==m)break;if(h[p]>m)l++}q=q*(6-m)+l}for(m=9;m>=6;m--)t=t*3+i[m];for(m=4;m>=0;m--)t=t*2+i[m];if(q!=0||t!=0)for(m=mn;m<99;m++)if(v(q,t,m,-1))break;b[c]="";for(p=0;p<k.length;p++)b[c]+=["U","L","R","B"][k[p]&7]+["","'"][(k[p]&8)/8]+" ";var a=["l","r","b","u"];for(p=0;p<4;p++){q=n(3);if(q<2)b[c]+=a[p]+["","'"][q]+" "}}}function v(q,t,l,c){if(l==0){if(q==0&&t==0)return true}else{if(g[q]>l||f[t]>l)return false;var p,s,a,m;for(m=0;m<4;m++)if(m!=c){p=q;s=t;for(a=0;a<2;a++){p=d[p][m];s=e[s][m];k[k.length]=m+8*a;if(v(p,s,l-1,m))return true;k.length--}}}return false}function w(p,m){var a,l,c,s=[],q=p;for(a=1;a<=6;a++){c=Math.floor(q/a);l=q-a*c;q=c;for(c=a-1;c>=l;c--)s[c+1]=s[c];s[l]=6-a}if(m==0)y(s,0,3,1);if(m==1)y(s,1,5,2);if(m==2)y(s,0,2,4);if(m==3)y(s,3,4,5);q=0;for(a=0;a<6;a++){l=0;for(c=0;c<6;c++){if(s[c]==a)break;if(s[c]>a)l++}q=q*(6-a)+l}return q}function x(p,m){var a,l,c,t=0,s=[],q=p;for(a=0;a<=4;a++){s[a]=q&1;q>>=1;t^=s[a]}s[5]=t;for(a=6;a<=9;a++){c=Math.floor(q/3);l=q-3*c;q=c;s[a]=l}if(m==0){s[6]++;if(s[6]==3)s[6]=0;y(s,0,3,1);s[1]^=1;s[3]^=1}if(m==1){s[7]++;if(s[7]==3)s[7]=0;y(s,1,5,2);s[2]^=1;s[5]^=1}if(m==2){s[8]++;if(s[8]==3)s[8]=0;y(s,0,2,4);s[0]^=1;s[2]^=1}if(m==3){s[9]++;if(s[9]==3)s[9]=0;y(s,3,4,5);s[3]^=1;s[4]^=1}q=0;for(a=9;a>=6;a--)q=q*3+s[a];for(a=4;a>=0;a--)q=q*2+s[a];return q}function y(p,a,c,t){var s=p[a];p[a]=p[c];p[c]=p[t];p[t]=s}function n(c){return Math.floor(Math.random()*c)}
  u();
  ss[0]+=b[0];
+}
+
+// function written by Shuang Chen
+function getskewboptscramble(e){
+ function t(e){var t=arguments.length-1,n=e[arguments[t]];for(var r=t;r>1;r--){e[arguments[r]]=e[arguments[r-1]]}e[arguments[1]]=n}function n(e,t){return e[t>>3]>>((t&7)<<2)&15}function r(e,t,n,r){for(var i=0;i<r;i++){e[i]=[];for(var s=0;s<t;s++){e[i][s]=n(s,i)}}}function i(e,t,r,i,s,o,u){var a=Array.isArray(s);for(var f=0,l=r+7>>>3;f<l;f++){e[f]=-1}e[t>>3]^=15<<((t&7)<<2);for(var c=0;c<=i;c++){var h=c+1^15;for(var p=0;p<r;p++){if(n(e,p)==c){for(var d=0;d<o;d++){var v=p;for(var m=0;m<u;m++){v=a?s[d][v]:s(v,d);if(n(e,v)==15){e[v>>3]^=h<<((v&7)<<2)}}}}}}}function s(e,t,r,i,o){if(0==r)return 0==e&&0==t;if(n(a,e)>r||n(f,t)>r)return!1;for(var u=0;4>u;u++)if(u!=i)for(var h=e,p=t,d=0;2>d;d++)if(h=l[u][h],p=c[u][p],s(h,p,r-1,u,o))return o.push(u*2+(1-d)),!0;return!1}function o(e,n){var r=e%12;e=~~(e/12);for(var i=[],s=5517840,o=0,u=0;5>u;u++){var a=h[5-u],f=~~(e/a),e=e-f*a,o=o^f,f=f<<2;i[u]=s>>f&15;a=(1<<f)-1;s=(s&a)+(s>>4&~a)}0==(o&1)?i[5]=s:(i[5]=i[4],i[4]=s);0==n&&t(i,0,3,1);2==n&&t(i,1,5,2);1==n&&t(i,0,2,4);3==n&&t(i,3,4,5);e=0;s=5517840;for(u=0;4>u;u++)f=i[u]<<2,e*=6-u,e+=s>>f&15,s-=1118480<<f;return e*12+p[r][n]}function u(e,t){var n=[];var r=[];for(var i=0;i<4;i++){n[i]=e%3;e=~~(e/3)}for(var i=0;i<3;i++){r[i]=e%3;e=~~(e/3)}r[3]=(6-r[0]-r[1]-r[2])%3;n[t]=(n[t]+1)%3;var s;if(t==0){var s=r[0];r[0]=r[2]+2;r[2]=r[1]+2;r[1]=s+2}else if(t==1){var s=r[0];r[0]=r[1]+2;r[1]=r[3]+2;r[3]=s+2}else if(t==2){var s=r[0];r[0]=r[3]+2;r[3]=r[2]+2;r[2]=s+2}else if(t==3){var s=r[1];r[1]=r[2]+2;r[2]=r[3]+2;r[3]=s+2}for(var i=2;i>=0;i--){e=e*3+r[i]%3}for(var i=3;i>=0;i--){e=e*3+n[i]}return e}var a=[],f=[],l=[],c=[];var h=[1,1,1,3,12,60,360];var p=[[6,5,10,1],[9,7,4,2],[3,11,8,0],[10,1,6,5],[0,8,11,3],[7,9,2,4],[4,2,9,7],[11,3,0,8],[1,10,5,6],[8,0,3,11],[2,4,7,9],[5,6,1,10]];var d=[0,1,2,0,2,1,1,2,0,2,1,0];var v,m,y=[];r(l,4320,o,4);i(a,0,4320,7,l,4,2);r(c,2187,u,4);i(f,0,2187,6,c,4,2);do{v=0|Math.random()*4320;m=0|Math.random()*2187}while(v==0&&m==0||d[v%12]!=(m+~~(m/3)+~~(m/9)+~~(m/27))%3);for(;99>e&&!s(v,m,e,-1,y);e++){}var b=[];var w=["L","R","B","U"];for(var u=0;u<y.length;u++){var E=y[u]>>1;var S=y[u]&1;if(E==2){for(var l=0;l<=S;l++){var x=w[0];w[0]=w[1];w[1]=w[3];w[3]=x}}b.push(w[E]+(S==1?"'":""))}
+ ss[0]+=b.join(" ")
 }
 
 /* Function by Kas Thomas, http://www.planetpdf.com/developer/article.asp?ContentID=testing_for_object_types_in_ja */
