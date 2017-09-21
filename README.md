@@ -4,7 +4,7 @@ qqTimer is a light-weight speedcubing timer written in Javascript by Michael Got
 This repository is for Lucas Garron's experimentations for qqTimer features.
 
 Official url: <http://mzrg.com/qqtimer/>  
-Unofficial mirror: <http://www.qqtimer.net/>
+Unofficial mirror: <https://www.qqtimer.net/>
 
 ## [Speedsolving.com](http://www.speedsolving.com/forum/) Threads
 - [Introducing qqTimer!](http://www.speedsolving.com/forum/showthread.php?14526-Introducing-qqTimer!)
