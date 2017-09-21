@@ -4,6 +4,7 @@
   <title>qqTimer</title>
   <script type="text/javascript" src="scramble_333_edit.js"></script>
   <script type="text/javascript" src="scramble_sq1.js"></script>
+  <script type="text/javascript" src="scramble_slidy.js"></script>
   <script type="text/javascript">
 <!--
 
@@ -39,7 +40,7 @@ var styleName = "style" + ((a=getCookie("style"))==null?0:a) + ".css";
 document.writeln("<link rel='stylesheet' type='text/css' href='"+styleName+"'>");
 
 // firefox 9.0.1 bugfix
-window.onkeydown = function(event) {checkKey(event.keyCode); };
+window.onkeydown = function(event) {checkKey(event.keyCode, event.shiftKey); };
 window.onkeyup = function(event) {startTimer(event.keyCode); };
 
 function initialize(lookForTimes, checkQueryString) {
@@ -127,6 +128,7 @@ function initialize(lookForTimes, checkQueryString) {
  getStats(true);
 
  scramblers['333'].initialize(null, Math); // hopefully this'll let IE load scramblers
+ scramblers['slidy'] = ["", null];
 
  curTime = new Date(0);
  $('leng').value = len;
@@ -249,16 +251,27 @@ function stopTimer(keyCode) {
   if (keyCode == 13) {
    var timeStr = $('timeEntry').value;
    var nonzero = false;
+   var dnfRegex = new RegExp(".*(DNF|dnf)\\((.*)\\).*");
    if (timeStr.match(/.* .*/)) {
     nonzero = parseTime(timeStr.replace(/(.*) .*/, "$1"), true);
     if (nonzero) { // if time breaks, ignore comments/notes
      comments[times.length-1] = timeStr.replace(/.*? (.*)$/, "$1");
-     notes[times.length-1] = 0;
-     loadList(); // unfortunately have to do this twice ;|
-     getStats(false);
     }
+   } else if (timeStr.match(dnfRegex)) {
+    nonzero = parseTime(dnfRegex.exec(timeStr)[2]);
    } else {
     nonzero = parseTime(timeStr, false);
+   }
+   if (nonzero) {
+    if (timeStr.match(/.*(DNF|dnf).*/)) {
+ 	 notes[times.length-1] = 1;
+    } else if (timeStr.match(/.*\+.*/)) {
+	 notes[times.length-1] = 2;
+    } else {
+	 notes[times.length-1] = 0;
+	}
+	loadList(); // unfortunately have to do this twice ;|
+    getStats(false);
    }
    $('timeEntry').value = "";
    if (nonzero) scrambleArr[scrambleArr.length] = scramble;
@@ -273,8 +286,29 @@ function stopTimer(keyCode) {
  }
 }
 
-function checkKey(keyCode) {
- if (keyCode == 13 || manualEnter == 0) stopTimer(keyCode);
+function checkKey(keyCode, shiftKey) {
+ 
+ if (keyCode == 13 || (manualEnter == 0 && timerStatus != 0 && timerStatus != 3)) { // normally, any key enters a time; with manual enter, only Enter does
+  stopTimer(keyCode);
+ } else if (keyCode == 8 && manualEnter == 0) { // backspace applies DNF
+  if (notes[notes.length - 1] == 1) {
+   changeNotes(0);
+  } else {
+   changeNotes(1);
+  }
+ } else if ((keyCode == 61 || keyCode == 187) && manualEnter == 0) { // +/= applies +2 penalty
+  if (notes[notes.length - 1] == 2) {
+   changeNotes(0);
+  } else {
+   changeNotes(2);
+  }
+ } else if (keyCode == 173 || keyCode == 189) { // -/_ applies no penalty
+  changeNotes(0);
+ } else if (keyCode == 46 && !shiftKey && times.length > 0) { // delete removes last solve
+  del(times.length - 1);
+ } else if (keyCode == 46 && shiftKey) { // shift+delete clears session
+  resetTimes();
+ }
 }
 
 
@@ -348,9 +382,11 @@ function parseTime(s, importing) {
    time -= 2000;
   }
   times[times.length] = time;
-  clearHighlight();
-  loadList();
-  getStats(false);
+  if (!importing) {
+   clearHighlight();
+   loadList();
+   getStats(false);
+  }
   return true;
  } else {
   return false;
@@ -397,8 +433,10 @@ function loadList() {
 }
 
 function del(index) {
- if (confirm("Are you sure you want to delete the " +
-     pretty((notes[index]==1)?-1:times[index]+1000*notes[index]) + "?")) {
+ var prettyTime = pretty(times[index]);
+ if (notes[index]==1) prettyTime = "DNF(" + prettyTime + ")";
+ if (notes[index]==2) prettyTime = pretty(times[index]+2000) + "+";
+ if (confirm("Are you sure you want to delete the " + prettyTime + "?")) {
   for (var i = index; i < times.length - 1; i++) {
    times[i] = times[i+1];
    notes[i] = notes[i+1];
@@ -465,6 +503,7 @@ var penalty = 0;
 var useAvgN = 0;
 var viewstats = 1;
 var importFocus = 0;
+var typingFocus = false;
 var validColors = ["black","brown","white","purple","violet","red","orange","yellow","green","cyan","blue","gray","grey","pink"];
 var highlightColor;
 
@@ -514,12 +553,17 @@ function toggleMono() {
 function toggleInput() {
  if (manualEnter == 0) stopTimer();
  manualEnter = 1 - manualEnter;
+ typingFocus = false;
  setCookie("manualEnter", manualEnter);
  $('inputTimes').innerHTML = (manualEnter==1) ? "typing" : "timer";
  $('theTime').innerHTML = (manualEnter==1) ?
   "<input id='timeEntry' size=12 style='font-size:100%'>"+
   " <span onclick='stopTimer(13);' class='a' style='color:"+
   parseColor($('lcol').value)+"'>enter</span>" : "ready";
+ if ($('timeEntry') != null) {
+  $('timeEntry').onfocus = function() {typingFocus = true;}
+  $('timeEntry').onblur = function() {typingFocus = false;}
+ }
 }
 
 function toggleOptions() {
@@ -644,9 +688,11 @@ function toggleNightMode() {
  if (nightMode) {
   document.bgColor = "#000";
   document.body.style.color = "#fff";
+  $('theTime').style.color = "#fff";
  } else {
   document.bgColor = parseColor($('bcol').value);
   document.body.style.color = parseColor($('fcol').value);
+  $('theTime').style.color = parseColor($('fcol').value);
  }
 }
 
@@ -763,6 +809,7 @@ function getSession() {
  notes = [];
  comments = [];
  scrambleArr = [];
+ $("sessbox").blur();
  
  var s = null;
  if (window.localStorage !== undefined) { // try to load text from localStorage
@@ -1214,7 +1261,9 @@ function importTimes() {
 
  toggleImport();
  importFocus = false;
+ clearHighlight();
  loadList();
+ getStats(true);
 }
 
 
@@ -1233,7 +1282,7 @@ var minxsuff=["","2","'","2'"];
 // data for all scramblers
 var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["2x2x2",[["random state","222so",11],["optimal random state","222o",0],["3-gen","2223",25],["6-gen",2226,25]]],
- ["3x3x3",[["random state","333",0],["old style","333o",25]]],
+ ["3x3x3",[["random state","333",0],["random state + orientation","333ori",0],["old style","333o",25]]],
  ["4x4x4",[["SiGN","444",40],["WCA","444wca",40],["YJ (place fixed center on Urf)","444yj",40]]],
  ["5x5x5",[["SiGN","555",60],["WCA","555wca",60]]],
  ["6x6x6",[["SiGN","666si",80],["prefix","666p",80],["suffix","666s",80]]],
@@ -1242,9 +1291,11 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
  ["Megaminx",[["Pochmann","mgmp",70],["old style","mgmo",70]]],
  ["Pyraminx",[["random state","pyrso",11],["optimal random state","pyro",0],["random moves","pyrm",25]]],
  ["Skewb",[["random state","skbso",11],["optimal random state","skbo",0],["U L R B","skb",25]]],
- ["Square-1",[["face turn metric","sq1h",40],["twist metric","sq1t",20],["random state","sqrs",0]]],
+ ["Square-1",[["random state","sqrs",0],["face turn metric","sq1h",40],["twist metric","sq1t",20]]],
  ["===OTHER PUZZLES===",[["--","blank",0]]],
- ["15 puzzle",[["piece moves","15p",80],["blank moves","15pm",80]]],
+ ["8 puzzle",[["random state (fast)","8puzso",0],["optimal random state","8puzo",0]]],
+ ["15 puzzle",[["random state (fast)","15puzso",0],["random state (efficient)","15puzsoe",0],["random moves","15p",80]]],
+ ["24 puzzle",[["random state (fast)","24puzso",0]]],
  ["1x3x3 (Floppy Cube)",[["U D L R","flp",25]]],
  ["2x3x3 (Domino)",[[" ","223",25]]],
  ["3x3x4",[[" ","334",40]]],
@@ -1277,8 +1328,8 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
   ["Roux-generator <M,U>","roux",25],["3-generator <F,R,U>","3gen_F",25],["3-generator <R,U,L>","3gen_L",25],
   ["3-generator <R,r,U>","RrU",25],["half turns only","half",25],["edges only","edges",0],
   ["corners only","corners",0],["last layer","ll",0],["CMLL+LSE","cmll",0],
-  ["last slot + last layer","lsll2",0],["ZBLL","zbll",0],["2GLL","2gll",0],["PLL","pll",0],["ZZ last slot + last layer","zzls",0],
-  ["last slot + last layer (old)","lsll",15]]],
+  ["last slot + last layer","lsll2",0],["ZBLL","zbll",0],["2GLL","2gll",0],["PLL","pll",0],["ZZ last slot + last layer","zzls",0],["F2L","f2l",0]
+  ,["last slot + last layer (old)","lsll",15]]],
  ["Bandaged Cube (Bicube)",[["","bic",30]]],
  ["Bandaged Square-1 </,(1,0)>",[["twist metric","bsq",25]]],
  ["Bigcube subsets",[["<R,r,U,u>","RrUu",40],["4x4x4 edges","4edge",8],["5x5x5 edges","5edge",8],
@@ -1296,6 +1347,8 @@ var scrdata = [["===WCA PUZZLES===",[["--","blank",0]]],
 function rndEl(x){return x[Math.floor(Math.random()*x.length)];}
 
 function scrambleIt(){
+ $("optbox").blur();
+ $("optbox2").blur();
  lastscramble = scramble;
  for (var i=0; i<num; i++) ss[i] = "";
  if(type=="111"){			// 1x1x1
@@ -1318,6 +1371,10 @@ function scrambleIt(){
  }
  else if(type=="333"){		        // 3x3x3 (random state)
   ss[0]=scramblers["333"].getRandomScramble();
+ }
+ else if(type=="333ori"){		        // 3x3x3 (random state + orientation)
+  ss[0]=scramblers["333"].getRandomScramble();
+  ss[0] += randomCubeOrientation();
  }
  else if(type=="sqrs"){	          	// square-1 (random state)
   if (initoncesq1==1) { scramblers['sq1'].initialize(null, Math); initoncesq1=0; }
@@ -1392,11 +1449,38 @@ function scrambleIt(){
  else if(type=="777si"){		// 7x7x7 (SiGN)
   megascramble([["U","D","u","d","3u","3d"],["R","L","r","l","3r","3l"],["F","B","f","b","3f","3b"]],cubesuff);
  }
- else if(type=="15p"){			// 15 puzzle
-  do15puzzle(false);
+ else if(type=="8puzso"){		// 8 puzzle random state
+  if (scramblers['slidy'][0] != type) {
+   scramblers['slidy'] = [type, new SlidySolver(3, 3, [[1,2,3],[4,5,6,7,8]])];
+  }
+  ss[0] = scramblers['slidy'][1].getscramble();
  }
- else if(type=="15pm"){			// 15 puzzle, mirrored
-  do15puzzle(true);
+ else if(type=="8puzo"){		// 8 puzzle optimal random state
+  if (scramblers['slidy'][0] != type) {
+   scramblers['slidy'] = [type, new SlidySolver(3, 3, [[1,2,3,4,5,6,7,8]])];
+  }
+  ss[0] = scramblers['slidy'][1].getscramble();
+ }
+ else if(type=="15puzso"){		// 15 puzzle random state (fast)
+  if (scramblers['slidy'][0] != type) {
+   scramblers['slidy'] = [type, new SlidySolver(4, 4, [[1,2],[3,4],[5,9,13],[6,7,8],[10,11,12,14,15]])];
+  }
+  ss[0] = scramblers['slidy'][1].getscramble();
+ }
+ else if(type=="15puzsoe"){		// 15 puzzle random state (efficient)
+  if (scramblers['slidy'][0] != type) {
+   scramblers['slidy'] = [type, new SlidySolver(4, 4, [[1,2,3,4],[5,9,13],[6,7,8,10,11,12,14,15]])];
+  }
+  ss[0] = scramblers['slidy'][1].getscramble();
+ }
+ else if(type=="24puzso"){		// 24 puzzle random state (fast)
+  if (scramblers['slidy'][0] != type) {
+   scramblers['slidy'] = [type, new SlidySolver(5, 5, [[1,2],[6,7],[3,4,5],[8,9,10],[11,16,21],[12,17,22],[13,14,15],[18,19,20,23,24]])];
+  }
+  ss[0] = scramblers['slidy'][1].getscramble();
+ }
+ else if(type=="15p"){			// 15 puzzle random moves
+  do15puzzle(false);
  }
  else if(type=="clk"){			// Clock (Jaap order)
   for(var n=0;n<num;n++){
@@ -1425,7 +1509,7 @@ function scrambleIt(){
    var clock_rotations=["0+", "1+", "2+", "3+", "4+", "5+", "6+", "5-", "4-", "3-", "2-", "1-"];
    var pins=["UR", "DR", "DL", "UL", "U", "R", "D", "L", "ALL", "U", "R", "D", "L", "ALL"];
    var final_pins=["UR", "DR", "DL", "UL"];
-   ss[n]="<tt><b><br>";
+   ss[n]="";
    for(var i=0;i<14;i++){
     ss[n]+=pins[i]+rndEl(clock_rotations)+"&nbsp;";
     if(i==8) ss[n]+="y2&nbsp;";
@@ -1433,7 +1517,7 @@ function scrambleIt(){
    for(var i=0;i<4;i++){
     ss[n]+=rndEl([final_pins[i]+"&nbsp;", ""])
    }
-   ss[n]+="</b></tt><br>";
+   ss[n]+="";
   }
  }
  else if(type=="cm3"){			// Cmetrick
@@ -1731,6 +1815,9 @@ function scrambleIt(){
  else if(type=="zzls"){			// 3x3x3 ZZ last slot + last layer
   ss[0] = scramblers["333"].getZZLSScramble();
  }
+ else if(type=="f2l"){			// 3x3x3 f2l
+  ss[0] = scramblers["333"].getF2LScramble();
+ }
  else if(type=="lsll"){			// 3x3x3 last slot + last layer (old)
   megascramble([[["R U R'","R U2 R'","R U' R'"]],[["F' U F","F' U2 F","F' U' F"]],[["U","U2","U'"]]],[""]);
  }
@@ -1780,6 +1867,11 @@ function c(s){
 }
 function c2(){return rndEl(["U","d"])+rndEl(["U","d"]);}
 function c3(){return "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"}
+
+function randomCubeOrientation() {
+ s = rndEl(["","z","z'","x","x'","x2"]) + rndEl([""," y"," y'"," y2"]);
+ return s;
+}
 
 function edgescramble(start, end, moves) {
  var u=0,d=0,movemis=[];
@@ -2222,7 +2314,7 @@ function megascramble(turns, suffixes){
        <input value="25" id="leng" size="3" maxlength="3" onchange="rescramble3();">
       </td>
 	  <td><span class="hide"><font face="Arial" size="3">Session:</font></span>
-	   <select id="sessbox" size="1" onchange="getSession(); loadList(); getStats(true);"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+	   <select id="sessbox" size="1" onchange="getSession(); loadList(); getStats(true);"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option></select>
       <td><a href="http://mzrg.com/qqtimer/megadoc.html" target="_blank" style="color: black;" class="a">Help!</a></td>
      </tr>
     </tbody></table>

@@ -1776,6 +1776,9 @@ function drawSquare(r, cx, cy, w, fillColor) {
   var getZZLSScramble = function() {
 	return customScramble([3,4,5,6,7],[3,8,9,10,11],[2,3,4,5,6],[]);
   }
+  var getF2LScramble = function() {
+	return customScramble([0,1,2,3,4,5,6,7],[0,1,2,3,8,9,10,11],[0,1,2,3,4,5,6,7],[0,1,2,3,8,9,10,11]);
+  }
 
   return {
     /* mark2 interface */
@@ -1794,7 +1797,8 @@ function drawSquare(r, cx, cy, w, fillColor) {
 	getZBLLScramble: getZBLLScramble,
 	get2GLLScramble: get2GLLScramble,
 	getPLLScramble: getPLLScramble,
-	getZZLSScramble: getZZLSScramble
+	getZZLSScramble: getZZLSScramble,
+	getF2LScramble: getF2LScramble
   };
 
 })();
