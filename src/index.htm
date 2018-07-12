@@ -282,6 +282,12 @@ function stopTimer(keyCode) {
   if (timerupdate==1 || timerupdate==2) {clearInterval(timerID);}
   getTime(penalty);
   scrambleArr[scrambleArr.length] = scramble;
+  if (type == '333') {
+    $('reconstructOption').style.display = 'inline';
+    $('reconstruct').href = "https://jonatanklosko.github.io/reconstructions/#/?time=" + pretty(times[times.length - 1]) + "&scramble=" + scramble;
+  } else {
+    $('reconstructOption').style.display = 'none';
+  }
   rescramble3();
  }
 }
@@ -2330,7 +2336,7 @@ function megascramble(turns, suffixes){
    <td align="center">
     <span id="showOpt" onclick="toggleOptions()" class="a">show</span> timer options<br>
     <span id="theTime" style="font-family: sans-serif; font-weight: bold; font-size: 2em; ">ready</span><br>
-    that time was: <span onclick="changeNotes(0);" class="a">no penalty</span> <span onclick="changeNotes(2);" class="a">+2</span> <span onclick="changeNotes(1);" class="a">DNF</span> | <span onclick="comment();" class="a">leave comment</span>
+    that time was: <span onclick="changeNotes(0);" class="a">no penalty</span> <span onclick="changeNotes(2);" class="a">+2</span> <span onclick="changeNotes(1);" class="a">DNF</span> | <span onclick="comment();" class="a">leave comment</span> <span id="reconstructOption" style="display: none">| <a id="reconstruct" href="#" target="_blank">reconstruct</a></span>
    </td>
    <td style="width: 15em;">
     <div id="theList" style="overflow-y: scroll; height: 16em;"></div>
