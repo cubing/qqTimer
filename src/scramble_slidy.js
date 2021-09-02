@@ -284,7 +284,7 @@ SlidySolver.prototype.prettyScramble = function(str){
    move = str[i];
    cnt = 1;
   }
- }
+ }  if (cnt == 1) {	 	 output += move;	  } else if (cnt > 1) {	 	 output += move + cnt;	  }
  return output;
 }
 
