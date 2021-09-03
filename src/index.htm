@@ -32,6 +32,12 @@ var nightMode = false;
 
 function $(str){return document.getElementById(str);}
 
+// Returns a timestamp in milliseconds that is guaranteed to count real time
+// since the page load started. It will not jump back if the computer clock
+// changes.
+function getMonotomicMs() {
+  return performance.now();
+}
 
 // #################### TIMER STUFF ####################
 
@@ -196,23 +202,23 @@ function loadOptBoxes() {
 function startTimer(keyCode) {
  if (timerStatus == 0 && manualEnter == 0 && keyCode == 32 && importFocus == 0) {
   timerStatus = 3;
- } else if (timerStatus == 3 && manualEnter == 0 && keyCode == 32 && (new Date()).getTime() - curTime.getTime() >= 300 && importFocus == 0) {
+ } else if (timerStatus == 3 && manualEnter == 0 && keyCode == 32 && getMonotomicMs() - curTime >= 300 && importFocus == 0) {
   if (type=="sqrs") { $('scramble').innerHTML = "scramble: loading... "; }
   if (inspection == 1) {
    timerStatus = 2;
-   inspectionTime = new Date();
+   inspectionTime = getMonotomicMs();
    $('theTime').style.color = "red";
    if (timerupdate != 0) {inspectionID = setInterval(updateInspec, (timerupdate==1)?10:100);}
    else {$('theTime').innerHTML = "inspecting";}
   } else if (useBld == 1) {
    timerStatus = 4;
-   memoTime = new Date();
+   memoTime = getMonotomicMs();
    $('theTime').style.color = $('memcol').value;
    if (timerupdate==1 || timerupdate==2) {memoID = setInterval(updateMemo, (timerupdate==1)?10:100);}
    else {$('theTime').innerHTML = "memorizing";}
   } else {
    timerStatus = 1;
-   startTime = new Date();
+   startTime = getMonotomicMs();
    penalty = 0;
    $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
    if (timerupdate==1 || timerupdate==2) {timerID = setInterval(updateTimer, (timerupdate==1)?10:100);}
@@ -220,9 +226,9 @@ function startTimer(keyCode) {
   }
  } else if (timerStatus == 4 && keyCode == 32) {
   timerStatus = 1;
-  startTime = new Date();
+  startTime = getMonotomicMs();
   $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
-  var memoLength = startTime.getTime() - memoTime.getTime();
+  var memoLength = startTime - memoTime;
   if (timerupdate==1 || timerupdate==2) {
    clearInterval(memoID);
    timerID = setInterval(updateMemo, (timerupdate==1)?10:100);
@@ -230,9 +236,9 @@ function startTimer(keyCode) {
   else {$('theTime').innerHTML = "running";}
  } else if (timerStatus == 2 && keyCode == 32) {
   timerStatus = 1;
-  startTime = new Date();
+  startTime = getMonotomicMs();
   $('theTime').style.color = (nightMode ? "#fff" : $('fcol').value);
-  var inspecLength = startTime.getTime() - inspectionTime.getTime();
+  var inspecLength = startTime - inspectionTime;
   penalty = (inspecLength < 15000) ? 0 : (inspecLength < 17000) ? 2 : 1;
   clearInterval(inspectionID);
   if (timerupdate==1 || timerupdate==2) {
@@ -313,8 +319,8 @@ function checkKey(keyCode, shiftKey) {
 
 
 function updateTimer() {
- curTime = new Date();
- var time = curTime.getTime() - startTime.getTime();
+ curTime = getMonotomicMs();
+ var time = curTime - startTime;
  if (timerupdate == 1) {
   $('theTime').innerHTML = pretty(time);
  } else {
@@ -323,8 +329,8 @@ function updateTimer() {
 }
 
 function updateMemo() {
- curTime = new Date();
- var time = curTime.getTime() - memoTime.getTime();
+ curTime = getMonotomicMs();
+ var time = curTime - memoTime;
  if (timerupdate == 1) {
   $('theTime').innerHTML = pretty(time);
  } else {
@@ -333,20 +339,20 @@ function updateMemo() {
 }
 
 function updateInspec() {
- curTime = new Date();
- var time = curTime.getTime() - inspectionTime.getTime();
+ curTime = getMonotomicMs();
+ var time = curTime - inspectionTime;
  $('theTime').innerHTML = (time > 17000) ? "DNF" : (time > 15000) ? "+2" : 15-Math.floor(time/1000);
 }
 
 function getTime(note) {
- curTime = new Date();
+ curTime = getMonotomicMs();
  
  if (useBld==1) { 
-  var time = curTime.getTime() - memoTime.getTime(); 
-  var mtime = startTime.getTime() - memoTime.getTime();	
+  var time = curTime - memoTime; 
+  var mtime = startTime - memoTime;	
  } 
  else {
-  var time = curTime.getTime() - startTime.getTime();
+  var time = curTime - startTime;
  }
  times[times.length] = time;
  notes[notes.length] = note;
